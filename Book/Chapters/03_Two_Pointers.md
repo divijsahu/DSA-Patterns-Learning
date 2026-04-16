@@ -4,6 +4,19 @@
 
 ---
 
+## 🎥 Chapter Trailer
+
+In this chapter, you train your brain to stop brute-forcing and start navigating arrays like a camera dolly shot: smooth, deliberate, and mathematically justified.
+
+By the end, you should be able to:
+- detect when Two Pointers beats Hash Map or Sliding Window,
+- explain pointer movement before coding,
+- solve pair and triplet problems with confidence under interview pressure.
+
+⏱️ Suggested study time: 35 to 50 minutes
+
+---
+
 ## ✨ Premium Snapshot
 
 Think of this pattern as a luxury valet system for arrays: two smart workers start from strategic positions and move only when the logic tells them to. No chaos. No random guessing. No O(n²) regret.
@@ -61,6 +74,17 @@ flowchart TD
 
 ---
 
+## 🎞️ Pattern Decision Matrix
+
+| Pattern | Best For | Signature Clue | Typical Complexity |
+|---------|----------|----------------|--------------------|
+| Two Pointers | Sorted pair/triplet, in-place edits | Directional pointer move is provable | O(n) or O(n²) for 3Sum |
+| Sliding Window | Contiguous optimization | Expand right, shrink left | O(n) |
+| Hash Map | Unsorted complement lookup | Need fast membership | O(n) |
+| Binary Search | Single target on sorted structure | Halve search space | O(log n) |
+
+---
+
 ## 🎬 Flowchart: Two-Sum Pointer Movement
 
 ```mermaid
@@ -72,6 +96,57 @@ flowchart LR
     D -- No --> F[right--]
     E --> A
     F --> A
+```
+
+---
+
+## 🍿 Cinematic Pointer Walkthrough
+
+### Scene 1: Opening shot
+
+Array: `1  2  4  6  10`
+
+`L` starts at 1, `R` starts at 10.
+
+### Scene 2: First conflict
+
+`L + R = 11`, target is 8.
+
+Director note: too big, move right pointer left.
+
+### Scene 3: Tension builds
+
+Now `1 + 6 = 7`.
+
+Director note: too small, move left pointer right.
+
+### Scene 4: Resolution
+
+`2 + 6 = 8`.
+
+Cut to black. Answer found. ✅
+
+---
+
+## 🎬 Sequence View (Frame by Frame)
+
+```mermaid
+sequenceDiagram
+    participant L as Left Pointer
+    participant R as Right Pointer
+    participant C as Comparator
+
+    L->>C: value at left
+    R->>C: value at right
+    C-->>C: compute sum
+    C-->>R: sum too large, move leftward
+    L->>C: value at left
+    R->>C: updated value at right
+    C-->>C: compute sum again
+    C-->>L: sum too small, move rightward
+    L->>C: updated value at left
+    R->>C: current value at right
+    C-->>C: target matched
 ```
 
 ---
@@ -157,6 +232,28 @@ vector<vector<int>> three_sum(vector<int> nums) {
 
 ---
 
+## 🎬 3Sum Duplicate-Skip Logic (Visual State Machine)
+
+```mermaid
+stateDiagram-v2
+    [*] --> FixAnchor
+    FixAnchor --> SkipAnchor: anchor equals previous
+    SkipAnchor --> FixAnchor: advance anchor
+    FixAnchor --> SweepWindow: anchor accepted
+    SweepWindow --> FoundTriplet: sum equals zero
+    SweepWindow --> MoveLeft: sum too small
+    SweepWindow --> MoveRight: sum too large
+    FoundTriplet --> SkipLeftDup: left equals next left
+    FoundTriplet --> SkipRightDup: right equals previous right
+    SkipLeftDup --> FoundTriplet: keep skipping
+    SkipRightDup --> FoundTriplet: keep skipping
+    FoundTriplet --> SweepWindow: move both pointers
+    MoveLeft --> SweepWindow
+    MoveRight --> SweepWindow
+```
+
+---
+
 ## 🧪 Mini Visual Dry Run
 
 Example: `arr = [1,2,4,6,10]`, `target = 8`
@@ -168,6 +265,19 @@ Example: `arr = [1,2,4,6,10]`, `target = 8`
 | 1 | 3 | 2 + 6 | 8 | found ✅ |
 
 This is why it is O(n): each pointer only moves forward in one direction.
+
+---
+
+## 🎤 Interview Camera Mode
+
+Say this before coding:
+
+1. Input is sorted, so pointer moves are meaningful.
+2. If sum is small, I move left; if sum is large, I move right.
+3. Each pointer moves at most n times, so this pass is linear.
+4. For 3Sum, I sort, fix one anchor, then run the same two-pointer sweep.
+
+This sounds senior, concise, and proof-oriented.
 
 ---
 
@@ -201,6 +311,13 @@ This is why it is O(n): each pointer only moves forward in one direction.
    - Pair problems usually need `left < right`
    - Some boundary searches may need `<=`
 
+### Quick Bug Recovery Playbook
+
+- Wrong answer too small: check if you moved `right` when sum was already small.
+- Wrong answer too large: check if you moved `left` when sum was already large.
+- Duplicate triplets: ensure duplicate skipping happens after pushing a valid triplet.
+- Infinite loop: confirm one pointer moves on every branch.
+
 ---
 
 ## 😄 Memory Hooks
@@ -211,6 +328,16 @@ This is why it is O(n): each pointer only moves forward in one direction.
 
 If you remember just one thing:
 **Pointer movement is not a guess. It is a proof-driven decision.**
+
+---
+
+## 🧾 10-Minute Revision Card
+
+- Trigger: sorted + pair/triplet + direction is predictable.
+- Loop invariant: search space shrinks each move.
+- Sum small: move left.
+- Sum large: move right.
+- 3Sum formula: sort + fix anchor + two-pointer sweep + duplicate skip.
 
 ---
 
@@ -232,5 +359,7 @@ If you remember just one thing:
 ## 🏁 Final One-Liner
 
 Two Pointers is what happens when brute force gets a private tutor, drinks espresso, and starts making mathematically justified moves only. ☕
+
+Roll credits. 🎬
 
 ---
