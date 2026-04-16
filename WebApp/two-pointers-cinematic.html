@@ -3,78 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Two Pointers: Cinematic Edition</title>
+  <title>Two Pointers: Cinematic Study Experience</title>
   <style>
     :root {
-      --bg-1: #05070f;
-      --bg-2: #0b1220;
-      --panel: rgba(12, 19, 38, 0.7);
-      --text: #e6edf8;
-      --muted: #93a4c5;
-      --cyan: #44e2ff;
-      --blue: #6ea8ff;
-      --pink: #ff6ec7;
-      --green: #63ffb0;
-      --gold: #ffd166;
-      --border: rgba(148, 163, 184, 0.2);
-      --shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+      --bg-1: #04060d;
+      --bg-2: #0b1020;
+      --bg-3: #111a35;
+      --panel: rgba(11, 18, 35, 0.72);
+      --panel-strong: rgba(9, 15, 30, 0.9);
+      --text: #e6edff;
+      --muted: #9cb0d4;
+      --cyan: #4de6ff;
+      --blue: #72a3ff;
+      --pink: #ff78cf;
+      --green: #67ffbd;
+      --gold: #ffd98a;
+      --border: rgba(148, 163, 184, 0.22);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      --danger: #ff7f7f;
+      --success: #66f7bb;
     }
 
     * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       font-family: "Space Grotesk", "Poppins", "Avenir Next", "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(1200px 700px at 10% 10%, rgba(68, 226, 255, 0.15), transparent 55%),
-        radial-gradient(900px 600px at 90% 20%, rgba(255, 110, 199, 0.12), transparent 55%),
-        radial-gradient(1000px 700px at 50% 100%, rgba(99, 255, 176, 0.09), transparent 60%),
-        linear-gradient(120deg, var(--bg-1), var(--bg-2));
+        radial-gradient(1200px 700px at 12% 8%, rgba(77, 230, 255, 0.16), transparent 55%),
+        radial-gradient(900px 700px at 92% 16%, rgba(255, 120, 207, 0.14), transparent 55%),
+        radial-gradient(1000px 760px at 48% 100%, rgba(103, 255, 189, 0.09), transparent 65%),
+        linear-gradient(140deg, var(--bg-1), var(--bg-2) 55%, var(--bg-3));
       min-height: 100vh;
       overflow-x: hidden;
+    }
+
+    .aurora {
+      position: fixed;
+      inset: -20% -10%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(50px);
+      opacity: 0.45;
+      background:
+        conic-gradient(from 0deg at 25% 40%, rgba(77, 230, 255, 0.35), transparent 45%),
+        conic-gradient(from 120deg at 70% 35%, rgba(255, 120, 207, 0.30), transparent 40%),
+        conic-gradient(from 240deg at 45% 70%, rgba(103, 255, 189, 0.24), transparent 45%);
+      animation: drift 16s ease-in-out infinite alternate;
     }
 
     .grain {
       pointer-events: none;
       position: fixed;
       inset: 0;
-      opacity: 0.08;
+      opacity: 0.07;
       background-image: radial-gradient(#fff 0.35px, transparent 0.35px);
       background-size: 3px 3px;
       z-index: 1;
     }
 
     .container {
-      width: min(1180px, 92vw);
+      width: min(1200px, 93vw);
       margin: 0 auto;
-      padding: 24px 0 90px;
+      padding: 24px 0 80px;
       position: relative;
       z-index: 2;
     }
 
+    .topbar {
+      position: sticky;
+      top: 10px;
+      margin-bottom: 16px;
+      z-index: 6;
+      border: 1px solid var(--border);
+      background: rgba(7, 11, 24, 0.72);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      animation: riseIn 600ms ease both;
+    }
+
+    .topbar a {
+      color: #d8e7ff;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.81rem;
+      transition: 180ms ease;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .topbar a:hover {
+      border-color: rgba(77, 230, 255, 0.6);
+      color: #f1fbff;
+      transform: translateY(-1px);
+    }
+
     .hero {
       border: 1px solid var(--border);
-      background: linear-gradient(140deg, rgba(13, 22, 44, 0.8), rgba(10, 16, 34, 0.62));
-      backdrop-filter: blur(8px);
-      border-radius: 26px;
+      background: linear-gradient(140deg, rgba(13, 22, 44, 0.8), rgba(8, 13, 28, 0.7));
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
       box-shadow: var(--shadow);
-      padding: 40px 36px;
+      padding: 42px 36px;
       position: relative;
       overflow: hidden;
-      animation: riseIn 900ms ease both;
+      animation: riseIn 850ms ease both;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(26px);
+      opacity: 0.45;
+      pointer-events: none;
     }
 
     .hero::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 26px;
-      background: conic-gradient(from 0deg, transparent, rgba(68, 226, 255, 0.25), transparent, rgba(255, 110, 199, 0.25), transparent);
-      filter: blur(22px);
-      opacity: 0.5;
-      z-index: -1;
-      animation: spin 10s linear infinite;
+      width: 220px;
+      height: 220px;
+      right: -40px;
+      top: -30px;
+      background: radial-gradient(circle at 30% 30%, rgba(77, 230, 255, 0.7), transparent 65%);
+      animation: floatA 6s ease-in-out infinite;
+    }
+
+    .hero::after {
+      width: 260px;
+      height: 260px;
+      left: -90px;
+      bottom: -90px;
+      background: radial-gradient(circle at 60% 40%, rgba(255, 120, 207, 0.6), transparent 65%);
+      animation: floatB 7s ease-in-out infinite;
     }
 
     .eyebrow {
@@ -89,18 +159,49 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4.4vw, 3.6rem);
-      line-height: 1.07;
-      max-width: 18ch;
+      font-size: clamp(1.9rem, 4.6vw, 3.8rem);
+      line-height: 1.05;
+      max-width: 19ch;
       text-wrap: balance;
+      background: linear-gradient(100deg, #e8f3ff, #b6e3ff 42%, #f1c8ff 80%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .subtitle {
       margin-top: 14px;
       color: var(--muted);
-      max-width: 62ch;
+      max-width: 66ch;
       font-size: 1.02rem;
-      line-height: 1.58;
+      line-height: 1.62;
+    }
+
+    .hero-actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 9px 13px;
+      text-decoration: none;
+      color: #f0f8ff;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      transition: 180ms ease;
+    }
+
+    .btn-link:hover {
+      transform: translateY(-1px);
+      border-color: rgba(77, 230, 255, 0.7);
+      box-shadow: 0 0 22px rgba(77, 230, 255, 0.15);
     }
 
     .pill-row {
@@ -111,329 +212,626 @@
     }
 
     .pill {
-      border: 1px solid rgba(110, 168, 255, 0.3);
-      color: #cfe1ff;
-      background: rgba(14, 24, 44, 0.7);
+      border: 1px solid rgba(114, 163, 255, 0.35);
+      color: #d4e6ff;
+      background: rgba(13, 21, 40, 0.75);
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 0.82rem;
-      animation: pulseGlow 2.6s ease-in-out infinite;
+      animation: pulseGlow 2.8s ease-in-out infinite;
     }
 
+    section.module {
+      margin-top: 22px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: riseIn 650ms ease both;
+    }
+
+    .module-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: linear-gradient(145deg, rgba(18, 27, 51, 0.8), rgba(11, 17, 33, 0.6));
+    }
+
+    .module-head h2 {
+      margin: 0;
+      font-size: 1.06rem;
+      letter-spacing: 0.02em;
+    }
+
+    .module-sub {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .module-body { padding: 18px; }
+
     .grid {
-      margin-top: 26px;
       display: grid;
-      gap: 18px;
+      gap: 14px;
       grid-template-columns: repeat(12, 1fr);
     }
 
     .card {
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
-      animation: riseIn 700ms ease both;
+      border-radius: 16px;
+      padding: 14px;
+      transition: 180ms ease;
     }
 
-    .card h2 {
-      margin: 2px 0 8px;
-      font-size: 1.08rem;
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(77, 230, 255, 0.32);
     }
 
-    .card p {
+    .card h3 {
+      margin: 0 0 7px;
+      font-size: 0.98rem;
+    }
+
+    .card p,
+    .card li {
       margin: 0;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       line-height: 1.55;
     }
 
+    .card ul { margin: 8px 0 0 18px; padding: 0; }
+
+    .span-3 { grid-column: span 3; }
     .span-4 { grid-column: span 4; }
     .span-6 { grid-column: span 6; }
     .span-8 { grid-column: span 8; }
     .span-12 { grid-column: span 12; }
 
-    .sim {
-      margin-top: 22px;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: linear-gradient(145deg, rgba(12, 19, 38, 0.84), rgba(7, 13, 28, 0.78));
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      animation: riseIn 1s ease both;
-    }
-
-    .sim-head {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .sim-title {
-      font-size: 1rem;
-      font-weight: 700;
-    }
+    .sim-wrap { display: grid; gap: 14px; grid-template-columns: 2fr 1fr; }
 
     .controls {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+      font-size: 0.9rem;
     }
 
     button {
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(255, 255, 255, 0.05);
       color: var(--text);
       border-radius: 10px;
       padding: 8px 12px;
       cursor: pointer;
-      font-weight: 600;
-      transition: transform 150ms ease, background 180ms ease;
+      font-weight: 700;
+      transition: 140ms ease;
     }
 
-    button:hover { transform: translateY(-1px); }
-    button:active { transform: translateY(1px) scale(0.98); }
-
-    .sim-stage {
-      padding: 18px;
-      overflow-x: auto;
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(77, 230, 255, 0.55);
     }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: rgba(77, 230, 255, 0.6);
+      box-shadow: 0 0 0 3px rgba(77, 230, 255, 0.12);
+    }
+
+    .speed-wrap {
+      margin: 8px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .speed-wrap input { width: 180px; }
 
     .array {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       min-width: max-content;
       align-items: flex-end;
-      padding: 18px 6px 30px;
+      padding: 16px 4px 28px;
+      overflow-x: auto;
+      scrollbar-width: thin;
     }
 
     .cell {
-      width: 66px;
-      height: 84px;
-      border-radius: 16px;
+      width: 64px;
+      height: 80px;
+      border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.16);
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
       display: grid;
       place-items: center;
       position: relative;
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-size: 1.12rem;
+      font-weight: 800;
       color: #e9f0ff;
-      transition: 260ms ease;
+      transition: 220ms ease;
     }
 
     .cell .index {
       position: absolute;
-      bottom: -24px;
+      bottom: -23px;
       font-size: 0.72rem;
       color: var(--muted);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .cell.left {
-      border-color: rgba(68, 226, 255, 0.95);
-      box-shadow: 0 0 0 1px rgba(68, 226, 255, 0.3), 0 0 24px rgba(68, 226, 255, 0.28);
-      transform: translateY(-8px);
+      border-color: rgba(77, 230, 255, 0.95);
+      box-shadow: 0 0 0 1px rgba(77, 230, 255, 0.3), 0 0 22px rgba(77, 230, 255, 0.34);
+      transform: translateY(-8px) scale(1.02);
     }
 
     .cell.right {
-      border-color: rgba(255, 110, 199, 0.95);
-      box-shadow: 0 0 0 1px rgba(255, 110, 199, 0.26), 0 0 24px rgba(255, 110, 199, 0.25);
-      transform: translateY(-8px);
+      border-color: rgba(255, 120, 207, 0.95);
+      box-shadow: 0 0 0 1px rgba(255, 120, 207, 0.3), 0 0 22px rgba(255, 120, 207, 0.32);
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .cell.flash {
+      animation: flashCell 600ms ease;
     }
 
     .tag {
       position: absolute;
-      top: -28px;
-      font-size: 0.7rem;
-      letter-spacing: 0.05em;
-      font-weight: 800;
+      top: -27px;
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      font-weight: 900;
       text-transform: uppercase;
       padding: 3px 7px;
       border-radius: 999px;
       border: 1px solid transparent;
     }
 
-    .tag.left { color: #0ef; border-color: rgba(68, 226, 255, 0.6); background: rgba(68, 226, 255, 0.12); }
-    .tag.right { color: #ff8bd6; border-color: rgba(255, 110, 199, 0.6); background: rgba(255, 110, 199, 0.12); }
+    .tag.left {
+      color: #8ff8ff;
+      border-color: rgba(77, 230, 255, 0.6);
+      background: rgba(77, 230, 255, 0.14);
+    }
+
+    .tag.right {
+      color: #ffb8e9;
+      border-color: rgba(255, 120, 207, 0.6);
+      background: rgba(255, 120, 207, 0.14);
+    }
 
     .hud {
-      padding: 14px 18px 20px;
-      border-top: 1px solid var(--border);
+      margin-top: 10px;
       display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
     }
 
     .hud-box {
       border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 10px;
+      border-radius: 12px;
+      padding: 9px;
       background: rgba(255, 255, 255, 0.03);
     }
 
     .hud-label {
-      font-size: 0.73rem;
+      font-size: 0.72rem;
       color: var(--muted);
-      text-transform: uppercase;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
       margin-bottom: 6px;
     }
 
     .hud-value {
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 0.98rem;
+      font-weight: 800;
     }
 
     .log {
-      margin-top: 16px;
+      margin-top: 12px;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 12px;
       background: rgba(4, 8, 20, 0.55);
-      min-height: 72px;
+      min-height: 68px;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       line-height: 1.45;
     }
 
     .log strong { color: var(--text); }
 
-    .footer-note {
-      margin-top: 24px;
+    .dryrun {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .progress-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 10px 0 12px;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--pink));
+      transition: width 350ms ease;
+    }
+
+    .scene-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+
+    .scene-text {
+      margin: 0;
       color: var(--muted);
-      font-size: 0.88rem;
+      font-size: 0.9rem;
+      min-height: 54px;
+    }
+
+    .quiz-score {
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .quiz-options button {
+      text-align: left;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .feedback-good { color: var(--success); }
+    .feedback-bad { color: var(--danger); }
+
+    .footer-note {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.86rem;
       text-align: center;
     }
 
     @keyframes riseIn {
-      from { opacity: 0; transform: translateY(14px) scale(0.985); }
+      from { opacity: 0; transform: translateY(12px) scale(0.985); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
     @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 0 rgba(68, 226, 255, 0); }
-      50% { box-shadow: 0 0 16px rgba(68, 226, 255, 0.18); }
+      0%, 100% { box-shadow: 0 0 0 rgba(77, 230, 255, 0); }
+      50% { box-shadow: 0 0 14px rgba(77, 230, 255, 0.18); }
     }
 
-    @media (max-width: 960px) {
-      .span-4, .span-6, .span-8 { grid-column: span 12; }
-      .hud { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+    @keyframes floatA {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-10px, 8px); }
+    }
+
+    @keyframes floatB {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(12px, -8px); }
+    }
+
+    @keyframes drift {
+      0% { transform: translate(-2%, -1%) rotate(0deg); }
+      100% { transform: translate(2%, 1%) rotate(6deg); }
+    }
+
+    @keyframes flashCell {
+      0% { transform: translateY(-8px) scale(1.02); }
+      35% { transform: translateY(-14px) scale(1.06); }
+      100% { transform: translateY(-8px) scale(1.02); }
+    }
+
+    @media (max-width: 980px) {
+      .sim-wrap { grid-template-columns: 1fr; }
+      .span-3, .span-4, .span-6, .span-8 { grid-column: span 12; }
     }
 
     @media (max-width: 560px) {
-      .hero { padding: 26px 20px; border-radius: 20px; }
-      .hud { grid-template-columns: 1fr; }
-      .cell { width: 58px; height: 74px; }
+      .hero { padding: 28px 20px; border-radius: 20px; }
+      .cell { width: 56px; height: 72px; font-size: 1rem; }
+      .input-row { grid-template-columns: 1fr; }
+      .speed-wrap { flex-wrap: wrap; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
+  <div class="aurora"></div>
   <div class="grain"></div>
+
   <main class="container">
+    <nav class="topbar">
+      <a href="#concept">Concept</a>
+      <a href="#simulator">Simulator</a>
+      <a href="#dryrun">Animated Dry Run</a>
+      <a href="#quiz">Practice Quiz</a>
+      <a href="#interview">Interview Script</a>
+    </nav>
+
     <section class="hero">
-      <span class="eyebrow">Pattern 3 · Cinematic Edition</span>
-      <h1>Two Pointers Like A Movie Scene</h1>
+      <span class="eyebrow">Pattern 3 · Study Cinema</span>
+      <h1>Two Pointers: Learn It Once, Use It Forever</h1>
       <p class="subtitle">
-        Learn this pattern through camera cuts, visual tension, and a live pointer simulator.
-        Stop brute force. Start proof-driven movement.
+        This page is a complete study module. You get concept clarity, a live simulator,
+        animated dry runs, and an interactive quiz. The goal: understand why pointer moves are correct,
+        not just what to type.
       </p>
+      <div class="hero-actions">
+        <a class="btn-link" href="#simulator">Open Simulator</a>
+        <a class="btn-link" href="#quiz">Test Yourself</a>
+      </div>
       <div class="pill-row">
-        <span class="pill">O(n) pair sweep</span>
-        <span class="pill">In-place mastery</span>
-        <span class="pill">Interview-grade narration</span>
+        <span class="pill">Pair logic in O(n)</span>
+        <span class="pill">In-place edit pattern</span>
+        <span class="pill">3Sum upgrade path</span>
       </div>
     </section>
 
-    <section class="grid">
-      <article class="card span-4">
-        <h2>Scene Setup</h2>
-        <p>Sorted array. Left pointer starts at the beginning, right pointer starts at the end. Every move shrinks uncertainty.</p>
-      </article>
-      <article class="card span-4">
-        <h2>Movement Rule</h2>
-        <p>If current sum is too small, move left forward. If current sum is too large, move right backward.</p>
-      </article>
-      <article class="card span-4">
-        <h2>Final Cut</h2>
-        <p>Pointers meet the target or cross each other. Either way, the story ends in linear time with no wasted frames.</p>
-      </article>
-    </section>
-
-    <section class="sim" aria-label="Two pointers simulator">
-      <div class="sim-head">
-        <div class="sim-title">Live Pointer Simulator · Two Sum on Sorted Array</div>
-        <div class="controls">
-          <button id="stepBtn">Step</button>
-          <button id="playBtn">Auto Play</button>
-          <button id="resetBtn">Reset</button>
-        </div>
+    <section class="module" id="concept">
+      <div class="module-head">
+        <h2>Concept Core</h2>
+        <span class="module-sub">What to look for and why it works</span>
       </div>
-      <div class="sim-stage">
-        <div class="array" id="array"></div>
-      </div>
-      <div class="hud">
-        <div class="hud-box">
-          <div class="hud-label">Left Index</div>
-          <div class="hud-value" id="leftIdx">0</div>
+      <div class="module-body">
+        <div class="grid">
+          <article class="card span-4">
+            <h3>When to use it</h3>
+            <ul>
+              <li>Sorted array or sortable data.</li>
+              <li>Pair or triplet target condition.</li>
+              <li>Need O(1) extra space behavior.</li>
+            </ul>
+          </article>
+          <article class="card span-4">
+            <h3>Invariant</h3>
+            <p>
+              At each step, you remove one impossible region. If sum is too small,
+              only increasing the left value can help. If too large, only decreasing the right value can help.
+            </p>
+          </article>
+          <article class="card span-4">
+            <h3>Complexity memory hook</h3>
+            <p>
+              Each pointer moves in one direction and never rewinds. That means at most n moves per pointer: O(n).
+            </p>
+          </article>
         </div>
-        <div class="hud-box">
-          <div class="hud-label">Right Index</div>
-          <div class="hud-value" id="rightIdx">0</div>
-        </div>
-        <div class="hud-box">
-          <div class="hud-label">Current Sum</div>
-          <div class="hud-value" id="sum">0</div>
-        </div>
-        <div class="hud-box">
-          <div class="hud-label">Target</div>
-          <div class="hud-value" id="target">8</div>
-        </div>
-      </div>
-      <div class="sim-stage" style="padding-top: 0;">
-        <div class="log" id="log"></div>
       </div>
     </section>
 
-    <p class="footer-note">Built for visual learning. For production docs, link this page from your chapter markdown.</p>
+    <section class="module" id="simulator">
+      <div class="module-head">
+        <h2>Live Two-Sum Simulator</h2>
+        <span class="module-sub">Step through pointer decisions with custom input</span>
+      </div>
+      <div class="module-body sim-wrap">
+        <div>
+          <div class="input-row">
+            <input id="arrayInput" type="text" value="1,2,4,6,10" aria-label="Array values" />
+            <input id="targetInput" type="number" value="8" aria-label="Target" />
+          </div>
+          <div class="controls">
+            <button id="applyBtn">Apply Input</button>
+            <button id="stepBtn">Step</button>
+            <button id="playBtn">Auto Play</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+          <div class="speed-wrap">
+            <span>Animation speed</span>
+            <input id="speedRange" type="range" min="300" max="1800" step="100" value="1000" />
+            <span id="speedLabel">1000ms</span>
+          </div>
+
+          <div class="array" id="array"></div>
+          <div class="log" id="log"></div>
+        </div>
+
+        <aside>
+          <div class="hud">
+            <div class="hud-box">
+              <div class="hud-label">Left Index</div>
+              <div class="hud-value" id="leftIdx">0</div>
+            </div>
+            <div class="hud-box">
+              <div class="hud-label">Right Index</div>
+              <div class="hud-value" id="rightIdx">0</div>
+            </div>
+            <div class="hud-box">
+              <div class="hud-label">Current Sum</div>
+              <div class="hud-value" id="sum">0</div>
+            </div>
+            <div class="hud-box">
+              <div class="hud-label">Target</div>
+              <div class="hud-value" id="target">0</div>
+            </div>
+            <div class="hud-box">
+              <div class="hud-label">Iterations</div>
+              <div class="hud-value" id="iterations">0</div>
+            </div>
+            <div class="hud-box">
+              <div class="hud-label">State</div>
+              <div class="hud-value" id="state">Ready</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="module" id="dryrun">
+      <div class="module-head">
+        <h2>Animated Dry Run Storyboard</h2>
+        <span class="module-sub">Cinematic scene progression for retention</span>
+      </div>
+      <div class="module-body">
+        <div class="dryrun">
+          <div class="controls">
+            <button id="dryRunPlayBtn">Play Storyboard</button>
+            <button id="dryRunResetBtn">Reset Storyboard</button>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="dryProgress"></div>
+          </div>
+          <p class="scene-title" id="sceneTitle">Scene 1 · Establishing shot</p>
+          <p class="scene-text" id="sceneText">Pointers start at both ends. The search space is maximum.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="quiz">
+      <div class="module-head">
+        <h2>Pointer Decision Quiz</h2>
+        <span class="module-sub">Practice the move rule under pressure</span>
+      </div>
+      <div class="module-body">
+        <div class="grid">
+          <div class="card span-8">
+            <h3 id="quizPrompt">Question loading...</h3>
+            <div class="quiz-options">
+              <button data-choice="left" class="quiz-choice">Move left pointer right</button>
+              <button data-choice="right" class="quiz-choice">Move right pointer left</button>
+              <button data-choice="found" class="quiz-choice">Return answer now</button>
+            </div>
+            <p id="quizFeedback" style="margin-top:10px;color:var(--muted);"></p>
+            <div class="controls" style="margin-top:10px;">
+              <button id="nextQuizBtn">Next Question</button>
+            </div>
+          </div>
+          <div class="card span-4">
+            <h3>Scoreboard</h3>
+            <p class="quiz-score" id="quizScore">Score: 0 / 0</p>
+            <p style="margin-top:8px;">
+              Rule reminder:
+              sum too small -> move left.
+              sum too large -> move right.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="module" id="interview">
+      <div class="module-head">
+        <h2>Interview Script</h2>
+        <span class="module-sub">What to say before coding</span>
+      </div>
+      <div class="module-body">
+        <div class="card">
+          <p>
+            "The input is sorted, so pointer movement is monotonic and meaningful. I will start one pointer at each end.
+            If the sum is too small, I move left forward to increase sum. If too large, I move right backward to decrease sum.
+            Each pointer moves at most n times, so total time is O(n) with O(1) extra space."
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Cinematic Study Module · Two Pointers · Built as interactive material</p>
   </main>
 
   <script>
-    const nums = [1, 2, 4, 6, 10];
-    const target = 8;
+    // -----------------------------
+    // Two-sum simulator state
+    // -----------------------------
+    let nums = [1, 2, 4, 6, 10];
+    let target = 8;
     let left = 0;
     let right = nums.length - 1;
     let done = false;
     let interval = null;
+    let iterations = 0;
+    let speedMs = 1000;
 
     const arrayEl = document.getElementById("array");
     const leftIdxEl = document.getElementById("leftIdx");
     const rightIdxEl = document.getElementById("rightIdx");
     const sumEl = document.getElementById("sum");
     const targetEl = document.getElementById("target");
+    const iterationsEl = document.getElementById("iterations");
+    const stateEl = document.getElementById("state");
     const logEl = document.getElementById("log");
+
+    const arrayInput = document.getElementById("arrayInput");
+    const targetInput = document.getElementById("targetInput");
+    const applyBtn = document.getElementById("applyBtn");
     const stepBtn = document.getElementById("stepBtn");
     const playBtn = document.getElementById("playBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const speedRange = document.getElementById("speedRange");
+    const speedLabel = document.getElementById("speedLabel");
 
-    targetEl.textContent = String(target);
+    function parseArrayInput(text) {
+      const raw = text.split(",").map(s => s.trim()).filter(Boolean);
+      if (!raw.length) return null;
+      const parsed = raw.map(Number);
+      if (parsed.some(v => Number.isNaN(v))) return null;
+      return parsed.slice().sort((a, b) => a - b);
+    }
 
-    function renderArray() {
+    function writeLog(message, tone) {
+      const prefix = tone ? `<strong>${tone}</strong> ` : "";
+      logEl.innerHTML = prefix + message;
+    }
+
+    function renderArray(flash = false) {
       arrayEl.innerHTML = "";
+
       nums.forEach((num, idx) => {
         const cell = document.createElement("div");
         cell.className = "cell";
-        cell.textContent = num;
+        cell.textContent = String(num);
 
         const index = document.createElement("span");
         index.className = "index";
@@ -456,56 +854,71 @@
           cell.appendChild(tag);
         }
 
+        if (flash && (idx === left || idx === right)) {
+          cell.classList.add("flash");
+        }
+
         arrayEl.appendChild(cell);
       });
 
-      leftIdxEl.textContent = String(left);
-      rightIdxEl.textContent = String(right);
-      const valid = left >= 0 && right >= 0 && left < nums.length && right < nums.length;
-      sumEl.textContent = valid ? String(nums[left] + nums[right]) : "-";
-    }
+      leftIdxEl.textContent = left >= 0 ? String(left) : "-";
+      rightIdxEl.textContent = right >= 0 ? String(right) : "-";
+      targetEl.textContent = String(target);
+      iterationsEl.textContent = String(iterations);
 
-    function writeLog(message, strong = "") {
-      if (strong) {
-        logEl.innerHTML = `<strong>${strong}</strong> ${message}`;
+      if (left >= 0 && right >= 0 && left < nums.length && right < nums.length) {
+        sumEl.textContent = String(nums[left] + nums[right]);
       } else {
-        logEl.textContent = message;
+        sumEl.textContent = "-";
       }
     }
 
-    function step() {
+    function resetSim() {
+      stopAuto();
+      left = 0;
+      right = nums.length - 1;
+      done = false;
+      iterations = 0;
+      stateEl.textContent = "Ready";
+      renderArray();
+      writeLog("Press Step or Auto Play. Rule: sum small -> left++, sum large -> right--.", "Ready:");
+    }
+
+    function stepSim() {
       if (done) return;
+
       if (left >= right) {
         done = true;
-        writeLog("Pointers crossed. No pair found.", "End:");
+        stateEl.textContent = "Ended";
+        writeLog("Pointers crossed. No valid pair remains.", "End:");
         stopAuto();
+        renderArray();
         return;
       }
 
+      iterations += 1;
       const current = nums[left] + nums[right];
+
       if (current === target) {
         done = true;
-        writeLog(`Found target with indices (${left}, ${right}) and values (${nums[left]}, ${nums[right]}).`, "Match:");
-        renderArray();
+        stateEl.textContent = "Found";
+        writeLog(`Match at indices (${left}, ${right}) with values (${nums[left]}, ${nums[right]}).`, "Success:");
+        renderArray(true);
         stopAuto();
         return;
       }
 
       if (current < target) {
+        stateEl.textContent = "Move Left";
         writeLog(`${nums[left]} + ${nums[right]} = ${current} is too small, so move left pointer right.`, "Decision:");
         left += 1;
       } else {
+        stateEl.textContent = "Move Right";
         writeLog(`${nums[left]} + ${nums[right]} = ${current} is too large, so move right pointer left.`, "Decision:");
         right -= 1;
       }
 
-      renderArray();
-    }
-
-    function startAuto() {
-      if (interval || done) return;
-      playBtn.textContent = "Pause";
-      interval = setInterval(step, 1100);
+      renderArray(true);
     }
 
     function stopAuto() {
@@ -516,23 +929,159 @@
       playBtn.textContent = "Auto Play";
     }
 
-    function reset() {
-      stopAuto();
-      left = 0;
-      right = nums.length - 1;
-      done = false;
-      renderArray();
-      writeLog("Click Step or Auto Play to begin the cinematic sweep.", "Ready:");
+    function startAuto() {
+      if (interval || done) return;
+      playBtn.textContent = "Pause";
+      interval = setInterval(stepSim, speedMs);
     }
 
-    stepBtn.addEventListener("click", step);
+    applyBtn.addEventListener("click", () => {
+      const parsed = parseArrayInput(arrayInput.value);
+      const t = Number(targetInput.value);
+
+      if (!parsed || parsed.length < 2 || Number.isNaN(t)) {
+        writeLog("Input invalid. Provide comma-separated numbers and a numeric target.", "Error:");
+        return;
+      }
+
+      nums = parsed;
+      target = t;
+      resetSim();
+    });
+
+    stepBtn.addEventListener("click", stepSim);
+
     playBtn.addEventListener("click", () => {
       if (interval) stopAuto();
       else startAuto();
     });
-    resetBtn.addEventListener("click", reset);
 
-    reset();
+    resetBtn.addEventListener("click", resetSim);
+
+    speedRange.addEventListener("input", () => {
+      speedMs = Number(speedRange.value);
+      speedLabel.textContent = `${speedMs}ms`;
+      if (interval) {
+        stopAuto();
+        startAuto();
+      }
+    });
+
+    // -----------------------------
+    // Storyboard dry run
+    // -----------------------------
+    const scenes = [
+      { title: "Scene 1 · Establishing shot", text: "Sorted array detected. Left starts at first element, right starts at last.", pct: 10 },
+      { title: "Scene 2 · First tension", text: "Compute outer sum. It is too large, so move right inward.", pct: 35 },
+      { title: "Scene 3 · Counter move", text: "New sum is too small, so move left inward.", pct: 62 },
+      { title: "Scene 4 · Convergence", text: "Pointers now form the target sum. Decision path was deterministic.", pct: 100 }
+    ];
+
+    let sceneIndex = 0;
+    let dryRunInterval = null;
+
+    const dryProgress = document.getElementById("dryProgress");
+    const sceneTitle = document.getElementById("sceneTitle");
+    const sceneText = document.getElementById("sceneText");
+    const dryRunPlayBtn = document.getElementById("dryRunPlayBtn");
+    const dryRunResetBtn = document.getElementById("dryRunResetBtn");
+
+    function renderScene() {
+      const s = scenes[sceneIndex];
+      sceneTitle.textContent = s.title;
+      sceneText.textContent = s.text;
+      dryProgress.style.width = `${s.pct}%`;
+    }
+
+    function playStoryboard() {
+      if (dryRunInterval) return;
+      dryRunPlayBtn.textContent = "Playing...";
+      dryRunInterval = setInterval(() => {
+        if (sceneIndex >= scenes.length - 1) {
+          clearInterval(dryRunInterval);
+          dryRunInterval = null;
+          dryRunPlayBtn.textContent = "Play Storyboard";
+          return;
+        }
+        sceneIndex += 1;
+        renderScene();
+      }, 1200);
+    }
+
+    dryRunPlayBtn.addEventListener("click", playStoryboard);
+    dryRunResetBtn.addEventListener("click", () => {
+      if (dryRunInterval) {
+        clearInterval(dryRunInterval);
+        dryRunInterval = null;
+      }
+      sceneIndex = 0;
+      renderScene();
+      dryRunPlayBtn.textContent = "Play Storyboard";
+    });
+
+    // -----------------------------
+    // Pointer decision quiz
+    // -----------------------------
+    const quizCases = [
+      { arr: [1, 2, 4, 6, 10], left: 0, right: 4, target: 8, correct: "right" },
+      { arr: [1, 2, 4, 6, 10], left: 0, right: 3, target: 8, correct: "left" },
+      { arr: [2, 3, 5, 9], left: 0, right: 2, target: 7, correct: "found" },
+      { arr: [1, 4, 7, 11], left: 1, right: 3, target: 13, correct: "right" },
+      { arr: [1, 4, 7, 11], left: 0, right: 2, target: 13, correct: "left" }
+    ];
+
+    let quizIndex = 0;
+    let scoreCorrect = 0;
+    let scoreTotal = 0;
+
+    const quizPrompt = document.getElementById("quizPrompt");
+    const quizFeedback = document.getElementById("quizFeedback");
+    const quizScore = document.getElementById("quizScore");
+    const nextQuizBtn = document.getElementById("nextQuizBtn");
+
+    function renderQuiz() {
+      const q = quizCases[quizIndex];
+      const leftVal = q.arr[q.left];
+      const rightVal = q.arr[q.right];
+      const sum = leftVal + rightVal;
+      quizPrompt.textContent = `Array ${JSON.stringify(q.arr)}, left=${q.left} (${leftVal}), right=${q.right} (${rightVal}), target=${q.target}, sum=${sum}. What is the best next action?`;
+      quizFeedback.textContent = "";
+      quizFeedback.className = "";
+      quizScore.textContent = `Score: ${scoreCorrect} / ${scoreTotal}`;
+    }
+
+    function checkQuiz(choice) {
+      const q = quizCases[quizIndex];
+      scoreTotal += 1;
+      if (choice === q.correct) {
+        scoreCorrect += 1;
+        quizFeedback.textContent = "Correct. Your move follows the sum-direction rule.";
+        quizFeedback.className = "feedback-good";
+      } else {
+        const map = {
+          left: "Move left pointer right",
+          right: "Move right pointer left",
+          found: "Return answer now"
+        };
+        quizFeedback.textContent = `Not quite. Correct move: ${map[q.correct]}.`;
+        quizFeedback.className = "feedback-bad";
+      }
+      quizScore.textContent = `Score: ${scoreCorrect} / ${scoreTotal}`;
+    }
+
+    document.querySelectorAll(".quiz-choice").forEach(btn => {
+      btn.addEventListener("click", () => checkQuiz(btn.dataset.choice));
+    });
+
+    nextQuizBtn.addEventListener("click", () => {
+      quizIndex = (quizIndex + 1) % quizCases.length;
+      renderQuiz();
+    });
+
+    // Initial render
+    renderScene();
+    renderQuiz();
+    resetSim();
   </script>
 </body>
 </html>
