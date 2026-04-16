@@ -36,65 +36,46 @@ You're looking for a name in a phone book. You don't start from page 1 — you o
 
 ## 📐 Core Template
 
-```python
-# ─── CLASSIC BINARY SEARCH ────────────────────────────────────────────────────
-def binary_search(arr, target):
-    left, right = 0, len(arr) - 1
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while left <= right:
-        mid = left + (right - left) // 2     # NEVER use (left + right) // 2
-                                              # → integer overflow in other languages
+int binary_search_exact(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
 
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1                    # Target is in RIGHT half
-        else:
-            right = mid - 1                   # Target is in LEFT half
+int lower_bound_index(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size();
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) left = mid + 1;
+        else right = mid;
+    }
+    return left;
+}
 
-    return -1                                 # Not found
-
-# ─── FIND LEFTMOST (FIRST) OCCURRENCE ─────────────────────────────────────────
-def find_first(arr, target):
-    left, right = 0, len(arr) - 1
-    result = -1
-
-    while left <= right:
-        mid = left + (right - left) // 2
-
-        if arr[mid] == target:
-            result = mid           # Record, but keep searching LEFT
-            right = mid - 1
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-
-    return result
-
-# ─── ROTATED SORTED ARRAY ─────────────────────────────────────────────────────
-def search_rotated(arr, target):
-    left, right = 0, len(arr) - 1
-
-    while left <= right:
-        mid = left + (right - left) // 2
-
-        if arr[mid] == target:
-            return mid
-
-        # KEY INSIGHT: One half is ALWAYS sorted in a rotated array
-        if arr[left] <= arr[mid]:                    # Left half is sorted
-            if arr[left] <= target < arr[mid]:
-                right = mid - 1                      # Target is in left half
-            else:
-                left = mid + 1                       # Target is in right half
-        else:                                        # Right half is sorted
-            if arr[mid] < target <= arr[right]:
-                left = mid + 1                       # Target is in right half
-            else:
-                right = mid - 1                      # Target is in left half
-
-    return -1
+int search_rotated_sorted_array(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[left] <= nums[mid]) {
+            if (nums[left] <= target && target < nums[mid]) right = mid - 1;
+            else left = mid + 1;
+        } else {
+            if (nums[mid] < target && target <= nums[right]) left = mid + 1;
+            else right = mid - 1;
+        }
+    }
+    return -1;
+}
 ```
 
 ---

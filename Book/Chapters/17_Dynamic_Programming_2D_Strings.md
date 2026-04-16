@@ -22,57 +22,49 @@ When you have two sequences (two strings or a grid with two dimensions), the sub
 
 ## 📐 Core Template
 
-```python
-# ─── LONGEST COMMON SUBSEQUENCE ───────────────────────────────────────────────
-def lcs(text1, text2):
-    m, n = len(text1), len(text2)
-    # dp[i][j] = LCS of text1[0..i-1] and text2[0..j-1]
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if text1[i-1] == text2[j-1]:
-                dp[i][j] = dp[i-1][j-1] + 1      # Characters match: extend LCS
-            else:
-                dp[i][j] = max(dp[i-1][j], dp[i][j-1])  # Take best of skipping one
+int longestCommonSubsequence(const string& text1, const string& text2) {
+    int m = text1.size(), n = text2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (text1[i - 1] == text2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+            else dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
 
-    return dp[m][n]
+int editDistance(const string& word1, const string& word2) {
+    int m = word1.size(), n = word2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 0; i <= m; ++i) dp[i][0] = i;
+    for (int j = 0; j <= n; ++j) dp[0][j] = j;
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (word1[i - 1] == word2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+        }
+    }
+    return dp[m][n];
+}
 
-
-# ─── EDIT DISTANCE ────────────────────────────────────────────────────────────
-def edit_distance(word1, word2):
-    m, n = len(word1), len(word2)
-    # dp[i][j] = min operations to convert word1[0..i-1] to word2[0..j-1]
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
-
-    # Base cases: convert to/from empty string
-    for i in range(m + 1): dp[i][0] = i   # Delete all chars
-    for j in range(n + 1): dp[0][j] = j   # Insert all chars
-
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if word1[i-1] == word2[j-1]:
-                dp[i][j] = dp[i-1][j-1]           # No operation needed
-            else:
-                dp[i][j] = 1 + min(
-                    dp[i-1][j],                    # Delete from word1
-                    dp[i][j-1],                    # Insert into word1
-                    dp[i-1][j-1]                   # Replace
-                )
-
-    return dp[m][n]
-
-
-# ─── UNIQUE PATHS (grid DP) ───────────────────────────────────────────────────
-def unique_paths(m, n):
-    # dp[i][j] = number of ways to reach cell (i, j)
-    dp = [[1] * n for _ in range(m)]   # First row and col = 1 (only one way)
-
-    for i in range(1, m):
-        for j in range(1, n):
-            dp[i][j] = dp[i-1][j] + dp[i][j-1]   # From above + from left
-
-    return dp[m-1][n-1]
+bool isInterleave(const string& s1, const string& s2, const string& s3) {
+    int m = s1.size(), n = s2.size();
+    if (m + n != (int)s3.size()) return false;
+    vector<vector<bool>> dp(m + 1, vector<bool>(n + 1, false));
+    dp[0][0] = true;
+    for (int i = 0; i <= m; ++i) {
+        for (int j = 0; j <= n; ++j) {
+            if (i > 0) dp[i][j] = dp[i][j] || (dp[i - 1][j] && s1[i - 1] == s3[i + j - 1]);
+            if (j > 0) dp[i][j] = dp[i][j] || (dp[i][j - 1] && s2[j - 1] == s3[i + j - 1]);
+        }
+    }
+    return dp[m][n];
+}
 ```
 
 ---

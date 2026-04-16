@@ -35,46 +35,47 @@ A hash map is a **memory palace** — you trade space for instant lookup. Instea
 
 ## 📐 Core Template
 
-```python
-from collections import defaultdict, Counter
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── TWO SUM PATTERN (find complement) ───────────────────────────────────────
-def two_sum(nums, target):
-    seen = {}                          # {value: index}
+vector<int> two_sum(const vector<int>& nums, int target) {
+    unordered_map<int, int> seen;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        int complement = target - nums[i];
+        auto it = seen.find(complement);
+        if (it != seen.end()) {
+            return {it->second, i};
+        }
+        seen[nums[i]] = i;
+    }
+    return {};
+}
 
-    for i, num in enumerate(nums):
-        complement = target - num
+bool is_anagram(const string& s, const string& t) {
+    if (s.size() != t.size()) return false;
+    unordered_map<char, int> freq;
+    for (char c : s) freq[c]++;
+    for (char c : t) {
+        auto it = freq.find(c);
+        if (it == freq.end()) return false;
+        if (--it->second < 0) return false;
+    }
+    return true;
+}
 
-        if complement in seen:
-            return [seen[complement], i]
+vector<vector<string>> group_anagrams(const vector<string>& strs) {
+    unordered_map<string, vector<string>> groups;
+    for (string word : strs) {
+        string key = word;
+        sort(key.begin(), key.end());
+        groups[key].push_back(word);
+    }
 
-        seen[num] = i                  # Store AFTER checking (avoid using same index)
-
-    return []
-
-# ─── FREQUENCY COUNT PATTERN ─────────────────────────────────────────────────
-def is_anagram(s, t):
-    if len(s) != len(t):
-        return False
-
-    freq = Counter(s)                  # {char: count}
-
-    for char in t:
-        freq[char] -= 1
-        if freq[char] < 0:
-            return False
-
-    return True
-
-# ─── GROUPING PATTERN ────────────────────────────────────────────────────────
-def group_anagrams(strs):
-    groups = defaultdict(list)         # {sorted_word: [original_words]}
-
-    for word in strs:
-        key = tuple(sorted(word))      # Canonical form of an anagram group
-        groups[key].append(word)
-
-    return list(groups.values())
+    vector<vector<string>> result;
+    for (auto& entry : groups) result.push_back(move(entry.second));
+    return result;
+}
 ```
 
 ---

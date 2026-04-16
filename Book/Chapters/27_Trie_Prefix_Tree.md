@@ -24,57 +24,66 @@ A Trie is a tree where each path from root to a node spells a word (or prefix). 
 
 ## 📐 Core Template
 
-```python
-class TrieNode:
-    def __init__(self):
-        self.children = {}             # char → TrieNode
-        self.is_end = False            # True if a complete word ends here
-        # Optional: store the word itself at the node for backtracking problems
-        self.word = None
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
+struct TrieNode {
+    unordered_map<char, TrieNode*> children;
+    bool is_end = false;
+    string word;
+};
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
+class Trie {
+public:
+    TrieNode* root;
 
-    def insert(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        node.is_end = True
-        node.word = word               # Store for backtracking retrieval
+    Trie() : root(new TrieNode()) {}
 
-    def search(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                return False
-            node = node.children[char]
-        return node.is_end             # Must end a complete word
+    void insert(const string& word) {
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (!node->children.count(ch)) node->children[ch] = new TrieNode();
+            node = node->children[ch];
+        }
+        node->is_end = true;
+        node->word = word;
+    }
 
-    def starts_with(self, prefix):
-        node = self.root
-        for char in prefix:
-            if char not in node.children:
-                return False
-            node = node.children[char]
-        return True                    # Prefix exists in the trie
+    bool search(const string& word) {
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (!node->children.count(ch)) return false;
+            node = node->children[ch];
+        }
+        return node->is_end;
+    }
 
-    def search_with_wildcard(self, word):
-        """Supports '.' as wildcard matching any single character"""
-        def dfs(node, i):
-            if i == len(word):
-                return node.is_end
-            char = word[i]
-            if char == '.':
-                return any(dfs(child, i + 1) for child in node.children.values())
-            if char not in node.children:
-                return False
-            return dfs(node.children[char], i + 1)
+    bool starts_with(const string& prefix) {
+        TrieNode* node = root;
+        for (char ch : prefix) {
+            if (!node->children.count(ch)) return false;
+            node = node->children[ch];
+        }
+        return true;
+    }
 
-        return dfs(self.root, 0)
+    bool search_with_wildcard(const string& word) {
+        function<bool(TrieNode*, int)> dfs = [&](TrieNode* node, int i) {
+            if (i == (int)word.size()) return node->is_end;
+            char ch = word[i];
+            if (ch == '.') {
+                for (auto& entry : node->children) {
+                    if (dfs(entry.second, i + 1)) return true;
+                }
+                return false;
+            }
+            if (!node->children.count(ch)) return false;
+            return dfs(node->children[ch], i + 1);
+        };
+        return dfs(root, 0);
+    }
+};
 ```
 
 ---

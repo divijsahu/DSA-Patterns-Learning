@@ -26,56 +26,48 @@ You're packing a hiking bag with a weight limit. For each item, you face a binar
 
 ## 📐 Core Template
 
-```python
-# ─── 0/1 KNAPSACK ─────────────────────────────────────────────────────────────
-def knapsack_01(weights, values, capacity):
-    n = len(weights)
-    # dp[i][w] = max value using first i items with capacity w
-    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(1, n + 1):
-        w, v = weights[i-1], values[i-1]
-        for cap in range(capacity + 1):
-            # Option 1: Don't take item i
-            dp[i][cap] = dp[i-1][cap]
-            # Option 2: Take item i (if it fits)
-            if cap >= w:
-                dp[i][cap] = max(dp[i][cap], dp[i-1][cap - w] + v)
+int knapsack_01(const vector<int>& weights, const vector<int>& values, int capacity) {
+    int n = weights.size();
+    vector<vector<int>> dp(n + 1, vector<int>(capacity + 1, 0));
+    for (int i = 1; i <= n; ++i) {
+        int w = weights[i - 1], v = values[i - 1];
+        for (int cap = 0; cap <= capacity; ++cap) {
+            dp[i][cap] = dp[i - 1][cap];
+            if (cap >= w) dp[i][cap] = max(dp[i][cap], dp[i - 1][cap - w] + v);
+        }
+    }
+    return dp[n][capacity];
+}
 
-    return dp[n][capacity]
+bool canPartition(const vector<int>& nums) {
+    int total = accumulate(nums.begin(), nums.end(), 0);
+    if (total % 2 != 0) return false;
+    int target = total / 2;
+    vector<bool> dp(target + 1, false);
+    dp[0] = true;
+    for (int num : nums) {
+        for (int j = target; j >= num; --j) {
+            dp[j] = dp[j] || dp[j - num];
+        }
+    }
+    return dp[target];
+}
 
-
-# ─── PARTITION EQUAL SUBSET SUM (0/1 Knapsack as boolean) ────────────────────
-def can_partition(nums):
-    total = sum(nums)
-    if total % 2 != 0:
-        return False
-
-    target = total // 2
-    # dp[j] = can we achieve sum j using a subset of nums?
-    dp = [False] * (target + 1)
-    dp[0] = True                       # Sum 0 is always achievable (empty subset)
-
-    for num in nums:
-        # Iterate BACKWARDS to prevent using same item twice
-        for j in range(target, num - 1, -1):
-            dp[j] = dp[j] or dp[j - num]
-
-    return dp[target]
-
-
-# ─── UNBOUNDED KNAPSACK (Coin Change) ─────────────────────────────────────────
-def coin_change(coins, amount):
-    # dp[i] = minimum coins to make amount i
-    dp = [float('inf')] * (amount + 1)
-    dp[0] = 0                          # 0 coins needed to make 0
-
-    for coin in coins:
-        # Iterate FORWARD: items can be reused
-        for i in range(coin, amount + 1):
-            dp[i] = min(dp[i], dp[i - coin] + 1)
-
-    return dp[amount] if dp[amount] != float('inf') else -1
+int coinChange(const vector<int>& coins, int amount) {
+    const int INF = 1e9;
+    vector<int> dp(amount + 1, INF);
+    dp[0] = 0;
+    for (int coin : coins) {
+        for (int i = coin; i <= amount; ++i) {
+            dp[i] = min(dp[i], dp[i - coin] + 1);
+        }
+    }
+    return dp[amount] == INF ? -1 : dp[amount];
+}
 ```
 
 ---

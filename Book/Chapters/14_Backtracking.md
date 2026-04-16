@@ -36,124 +36,93 @@ The power is in **pruning**: if you can detect invalidity early, you skip enormo
 
 ## 📐 Core Template
 
-```python
-# ─── UNIVERSAL BACKTRACKING TEMPLATE ─────────────────────────────────────────
-def backtrack(state, choices, result, ...):
-    # ── BASE CASE: Is the current state a complete valid solution? ────────────
-    if is_complete(state):
-        result.append(state[:])        # CRITICAL: append a COPY, not a reference
-        return
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for choice in get_choices(choices):
-        # ── PRUNING: Skip this choice if it leads to an invalid state ─────────
-        if not is_valid(state, choice):
-            continue
+vector<vector<int>> subsets(const vector<int>& nums) {
+    vector<vector<int>> result;
+    vector<int> current;
+    function<void(int)> backtrack = [&](int start) {
+        result.push_back(current);
+        for (int i = start; i < (int)nums.size(); ++i) {
+            current.push_back(nums[i]);
+            backtrack(i + 1);
+            current.pop_back();
+        }
+    };
+    backtrack(0);
+    return result;
+}
 
-        # ── CHOOSE: Add the choice to current state ───────────────────────────
-        state.append(choice)
-        mark_used(choice)
+vector<vector<int>> permutations(const vector<int>& nums) {
+    vector<vector<int>> result;
+    vector<int> current;
+    vector<bool> used(nums.size(), false);
+    function<void()> backtrack = [&]() {
+        if ((int)current.size() == (int)nums.size()) {
+            result.push_back(current);
+            return;
+        }
+        for (int i = 0; i < (int)nums.size(); ++i) {
+            if (used[i]) continue;
+            used[i] = true;
+            current.push_back(nums[i]);
+            backtrack();
+            current.pop_back();
+            used[i] = false;
+        }
+    };
+    backtrack();
+    return result;
+}
 
-        # ── EXPLORE: Recurse with this choice made ────────────────────────────
-        backtrack(state, remaining_choices, result, ...)
+vector<vector<int>> combinationSum(vector<int> candidates, int target) {
+    sort(candidates.begin(), candidates.end());
+    vector<vector<int>> result;
+    vector<int> current;
+    function<void(int, int)> backtrack = [&](int start, int remaining) {
+        if (remaining == 0) {
+            result.push_back(current);
+            return;
+        }
+        for (int i = start; i < (int)candidates.size(); ++i) {
+            if (candidates[i] > remaining) break;
+            current.push_back(candidates[i]);
+            backtrack(i, remaining - candidates[i]);
+            current.pop_back();
+        }
+    };
+    backtrack(0, target);
+    return result;
+}
 
-        # ── UNCHOOSE: Remove the choice (backtrack) ───────────────────────────
-        state.pop()
-        unmark_used(choice)
+vector<vector<string>> solveNQueens(int n) {
+    vector<vector<string>> result;
+    vector<string> board(n, string(n, '.'));
+    unordered_set<int> cols, pos_diag, neg_diag;
 
-
-# ─── SUBSETS ──────────────────────────────────────────────────────────────────
-def subsets(nums):
-    result = []
-
-    def backtrack(start, current):
-        result.append(current[:])      # Every state is a valid subset
-
-        for i in range(start, len(nums)):
-            current.append(nums[i])
-            backtrack(i + 1, current)  # i+1 ensures no repeats
-            current.pop()
-
-    backtrack(0, [])
-    return result
-
-
-# ─── PERMUTATIONS ─────────────────────────────────────────────────────────────
-def permutations(nums):
-    result = []
-    used = [False] * len(nums)
-
-    def backtrack(current):
-        if len(current) == len(nums):
-            result.append(current[:])
-            return
-
-        for i in range(len(nums)):
-            if used[i]:
-                continue
-            used[i] = True
-            current.append(nums[i])
-            backtrack(current)
-            current.pop()
-            used[i] = False
-
-    backtrack([])
-    return result
-
-
-# ─── COMBINATION SUM (reuse allowed) ─────────────────────────────────────────
-def combination_sum(candidates, target):
-    result = []
-    candidates.sort()                  # Sort for early pruning
-
-    def backtrack(start, current, remaining):
-        if remaining == 0:
-            result.append(current[:])
-            return
-
-        for i in range(start, len(candidates)):
-            if candidates[i] > remaining:
-                break                  # PRUNE: rest are too large too (sorted!)
-            current.append(candidates[i])
-            backtrack(i, current, remaining - candidates[i])  # i not i+1: reuse ok
-            current.pop()
-
-    backtrack(0, [], target)
-    return result
-
-
-# ─── N-QUEENS ─────────────────────────────────────────────────────────────────
-def solve_n_queens(n):
-    result = []
-    cols = set()
-    pos_diag = set()   # r + c is constant on positive diagonals
-    neg_diag = set()   # r - c is constant on negative diagonals
-    board = []
-
-    def backtrack(row):
-        if row == n:
-            result.append(["".join(r) for r in board])
-            return
-
-        for col in range(n):
-            if col in cols or (row + col) in pos_diag or (row - col) in neg_diag:
-                continue               # PRUNE: queen conflicts
-
-            # Place queen
-            cols.add(col)
-            pos_diag.add(row + col)
-            neg_diag.add(row - col)
-            board.append(['.' if c != col else 'Q' for c in range(n)])
-
-            backtrack(row + 1)
-
-            # Remove queen
-            cols.remove(col)
-            pos_diag.remove(row + col)
-            neg_diag.remove(row - col)
-            board.pop()
-
-    backtrack(0)
-    return result
+    function<void(int)> backtrack = [&](int row) {
+        if (row == n) {
+            result.push_back(board);
+            return;
+        }
+        for (int col = 0; col < n; ++col) {
+            if (cols.count(col) || pos_diag.count(row + col) || neg_diag.count(row - col)) continue;
+            cols.insert(col);
+            pos_diag.insert(row + col);
+            neg_diag.insert(row - col);
+            board[row][col] = 'Q';
+            backtrack(row + 1);
+            board[row][col] = '.';
+            cols.erase(col);
+            pos_diag.erase(row + col);
+            neg_diag.erase(row - col);
+        }
+    };
+    backtrack(0);
+    return result;
+}
 ```
 
 ---

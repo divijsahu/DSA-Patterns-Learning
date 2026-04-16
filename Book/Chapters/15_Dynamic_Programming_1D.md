@@ -29,73 +29,62 @@
 
 ## 📐 Core Template
 
-```python
-# ─── FIBONACCI / CLIMBING STAIRS ──────────────────────────────────────────────
-def climb_stairs(n):
-    if n <= 2: return n
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # dp[i] = number of ways to reach stair i
-    prev2, prev1 = 1, 2
+int climbStairs(int n) {
+    if (n <= 2) return n;
+    int prev2 = 1, prev1 = 2;
+    for (int i = 3; i <= n; ++i) {
+        int curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}
 
-    for i in range(3, n + 1):
-        curr = prev1 + prev2           # From stair i-1 (1 step) or i-2 (2 steps)
-        prev2, prev1 = prev1, curr
+int houseRobber(const vector<int>& nums) {
+    if (nums.size() == 1) return nums[0];
+    int prev2 = 0, prev1 = 0;
+    for (int num : nums) {
+        int curr = max(prev1, prev2 + num);
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}
 
-    return prev1                       # Space optimized: only need last 2 values
+bool wordBreak(const string& s, const vector<string>& wordDict) {
+    unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+    int n = s.size();
+    vector<bool> dp(n + 1, false);
+    dp[0] = true;
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (dp[j] && wordSet.count(s.substr(j, i - j))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[n];
+}
 
-
-# ─── HOUSE ROBBER ─────────────────────────────────────────────────────────────
-def house_robber(nums):
-    if len(nums) == 1: return nums[0]
-
-    # dp[i] = max money from houses 0..i
-    # Recurrence: dp[i] = max(dp[i-1], dp[i-2] + nums[i])
-    prev2, prev1 = 0, 0
-
-    for num in nums:
-        curr = max(prev1, prev2 + num)
-        prev2, prev1 = prev1, curr
-
-    return prev1
-
-
-# ─── WORD BREAK ───────────────────────────────────────────────────────────────
-def word_break(s, word_dict):
-    word_set = set(word_dict)
-    n = len(s)
-
-    # dp[i] = True if s[0..i-1] can be segmented
-    dp = [False] * (n + 1)
-    dp[0] = True                       # Empty string is always valid
-
-    for i in range(1, n + 1):
-        for j in range(i):
-            if dp[j] and s[j:i] in word_set:   # s[j..i-1] is a valid word
-                dp[i] = True
-                break
-
-    return dp[n]
-
-
-# ─── DECODE WAYS ──────────────────────────────────────────────────────────────
-def num_decodings(s):
-    n = len(s)
-    if s[0] == '0': return 0
-
-    dp = [0] * (n + 1)
-    dp[0] = 1                          # Empty string: 1 way
-    dp[1] = 1                          # Single char (non-zero): 1 way
-
-    for i in range(2, n + 1):
-        one_digit = int(s[i-1])
-        two_digits = int(s[i-2:i])
-
-        if one_digit != 0:             # s[i-1] alone is valid
-            dp[i] += dp[i-1]
-        if 10 <= two_digits <= 26:     # s[i-2..i-1] together is valid
-            dp[i] += dp[i-2]
-
-    return dp[n]
+int numDecodings(const string& s) {
+    if (s.empty() || s[0] == '0') return 0;
+    int n = s.size();
+    vector<int> dp(n + 1, 0);
+    dp[0] = 1;
+    dp[1] = 1;
+    for (int i = 2; i <= n; ++i) {
+        int one_digit = s[i - 1] - '0';
+        int two_digits = stoi(s.substr(i - 2, 2));
+        if (one_digit != 0) dp[i] += dp[i - 1];
+        if (10 <= two_digits && two_digits <= 26) dp[i] += dp[i - 2];
+    }
+    return dp[n];
+}
 ```
 
 ---

@@ -35,48 +35,49 @@ Greedy is the algorithm that always orders the cheapest coffee, then the cheapes
 
 ## 📐 Core Template
 
-```python
-# ─── JUMP GAME (can we reach the end?) ───────────────────────────────────────
-def can_jump(nums):
-    max_reach = 0                       # Farthest index we can currently reach
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i, jump in enumerate(nums):
-        if i > max_reach:
-            return False                # We're stuck, can't reach index i
-        max_reach = max(max_reach, i + jump)   # Greedily extend reach
+bool can_jump(const vector<int>& nums) {
+    int max_reach = 0;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        if (i > max_reach) return false;
+        max_reach = max(max_reach, i + nums[i]);
+    }
+    return true;
+}
 
-    return True
+int max_non_overlapping(vector<pair<int, int>> intervals) {
+    sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+    int count = 0;
+    int last_end = INT_MIN;
+    for (const auto& interval : intervals) {
+        if (interval.first >= last_end) {
+            ++count;
+            last_end = interval.second;
+        }
+    }
+    return count;
+}
 
-# ─── INTERVAL SCHEDULING (maximum non-overlapping) ───────────────────────────
-def max_non_overlapping(intervals):
-    # Greedy: always pick the interval that ends earliest
-    intervals.sort(key=lambda x: x[1])   # Sort by END time
-    count = 0
-    last_end = float('-inf')
-
-    for start, end in intervals:
-        if start >= last_end:            # No overlap with last chosen
-            count += 1
-            last_end = end               # Greedily commit to this interval
-
-    return count
-
-# ─── GAS STATION (circular greedy) ───────────────────────────────────────────
-def can_complete_circuit(gas, cost):
-    total_surplus = 0
-    current_surplus = 0
-    start = 0
-
-    for i in range(len(gas)):
-        net = gas[i] - cost[i]
-        total_surplus += net
-        current_surplus += net
-
-        if current_surplus < 0:          # Can't reach next station from 'start'
-            start = i + 1               # Restart: try starting after this station
-            current_surplus = 0
-
-    return start if total_surplus >= 0 else -1
+int can_complete_circuit(const vector<int>& gas, const vector<int>& cost) {
+    int total_surplus = 0;
+    int current_surplus = 0;
+    int start = 0;
+    for (int i = 0; i < (int)gas.size(); ++i) {
+        int net = gas[i] - cost[i];
+        total_surplus += net;
+        current_surplus += net;
+        if (current_surplus < 0) {
+            start = i + 1;
+            current_surplus = 0;
+        }
+    }
+    return total_surplus >= 0 ? start : -1;
+}
 ```
 
 ---

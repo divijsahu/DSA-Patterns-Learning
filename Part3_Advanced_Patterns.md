@@ -46,100 +46,107 @@ A heap is a special tree that always keeps the minimum (or maximum) at the root.
 
 ## 📐 Core Template
 
-```python
-import heapq
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── TOP K LARGEST (min-heap of size K) ───────────────────────────────────────
-def top_k_largest(nums, k):
-    heap = []
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-    for num in nums:
-        heapq.heappush(heap, num)
-        if len(heap) > k:
-            heapq.heappop(heap)        # Remove smallest — only K largest remain
+vector<int> top_k_largest(const vector<int>& nums, int k) {
+    priority_queue<int, vector<int>, greater<int>> heap;
+    for (int num : nums) {
+        heap.push(num);
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<int> result;
+    while (!heap.empty()) {
+        result.push_back(heap.top());
+        heap.pop();
+    }
+    return result;
+}
 
-    return list(heap)                  # heap[0] is the Kth largest
+vector<int> top_k_frequent(const vector<int>& nums, int k) {
+    unordered_map<int, int> freq;
+    for (int num : nums) freq[num]++;
+    using Item = pair<int, int>;
+    priority_queue<Item, vector<Item>, greater<Item>> heap;
+    for (auto& [num, count] : freq) {
+        heap.push({count, num});
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<int> result;
+    while (!heap.empty()) {
+        result.push_back(heap.top().second);
+        heap.pop();
+    }
+    return result;
+}
 
-# Python's heapq is a MIN-HEAP. To simulate MAX-HEAP: negate all values.
-# heapq.heappush(heap, -num)
-# -heapq.heappop(heap)
+vector<vector<int>> k_closest(const vector<vector<int>>& points, int k) {
+    priority_queue<tuple<int, int, int>> heap;
+    for (const auto& p : points) {
+        int x = p[0], y = p[1];
+        int dist = -(x * x + y * y);
+        heap.push({dist, x, y});
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<vector<int>> result;
+    while (!heap.empty()) {
+        auto [dist, x, y] = heap.top();
+        heap.pop();
+        result.push_back({x, y});
+    }
+    return result;
+}
 
+class MedianFinder {
+public:
+    priority_queue<int> small;
+    priority_queue<int, vector<int>, greater<int>> large;
 
-# ─── K MOST FREQUENT ELEMENTS ─────────────────────────────────────────────────
-def top_k_frequent(nums, k):
-    from collections import Counter
-    freq = Counter(nums)               # {element: frequency}
+    void add_num(int num) {
+        small.push(num);
+        if (!large.empty() && small.top() > large.top()) {
+            large.push(small.top());
+            small.pop();
+        }
+        if ((int)small.size() > (int)large.size() + 1) {
+            large.push(small.top());
+            small.pop();
+        } else if ((int)large.size() > (int)small.size()) {
+            small.push(large.top());
+            large.pop();
+        }
+    }
 
-    # Min-heap keyed by frequency — keeps only K highest-frequency elements
-    heap = []
-    for num, count in freq.items():
-        heapq.heappush(heap, (count, num))
-        if len(heap) > k:
-            heapq.heappop(heap)
+    double find_median() {
+        if (small.size() > large.size()) return small.top();
+        return (small.top() + large.top()) / 2.0;
+    }
+};
 
-    return [num for count, num in heap]
-
-
-# ─── K CLOSEST POINTS TO ORIGIN ───────────────────────────────────────────────
-def k_closest(points, k):
-    # Max-heap of size K (negate distance)
-    heap = []
-    for x, y in points:
-        dist = -(x*x + y*y)           # Negate = max-heap simulation
-        heapq.heappush(heap, (dist, x, y))
-        if len(heap) > k:
-            heapq.heappop(heap)
-
-    return [[x, y] for (_, x, y) in heap]
-
-
-# ─── FIND MEDIAN FROM DATA STREAM ────────────────────────────────────────────
-class MedianFinder:
-    def __init__(self):
-        self.small = []                # Max-heap (lower half) — negate values
-        self.large = []                # Min-heap (upper half)
-
-    def add_num(self, num):
-        # Always push to small first
-        heapq.heappush(self.small, -num)
-
-        # Balance: largest of small ≤ smallest of large
-        if self.small and self.large and -self.small[0] > self.large[0]:
-            val = -heapq.heappop(self.small)
-            heapq.heappush(self.large, val)
-
-        # Balance sizes: small can have at most one more than large
-        if len(self.small) > len(self.large) + 1:
-            val = -heapq.heappop(self.small)
-            heapq.heappush(self.large, val)
-        elif len(self.large) > len(self.small):
-            val = heapq.heappop(self.large)
-            heapq.heappush(self.small, -val)
-
-    def find_median(self):
-        if len(self.small) > len(self.large):
-            return -self.small[0]
-        return (-self.small[0] + self.large[0]) / 2.0
-
-
-# ─── MERGE K SORTED LISTS ─────────────────────────────────────────────────────
-def merge_k_sorted(lists):
-    heap = []
-    dummy = ListNode(0)
-    curr = dummy
-
-    for i, node in enumerate(lists):
-        if node:
-            heapq.heappush(heap, (node.val, i, node))
-
-    while heap:
-        val, i, node = heapq.heappop(heap)
-        curr.next = node
-        curr = curr.next
-        if node.next:
-            heapq.heappush(heap, (node.next.val, i, node.next))
-
-    return dummy.next
+ListNode* merge_k_sorted(const vector<ListNode*>& lists) {
+    using Item = tuple<int, int, ListNode*>;
+    priority_queue<Item, vector<Item>, greater<Item>> heap;
+    for (int i = 0; i < (int)lists.size(); ++i) {
+        if (lists[i]) heap.push({lists[i]->val, i, lists[i]});
+    }
+    ListNode dummy(0);
+    ListNode* curr = &dummy;
+    while (!heap.empty()) {
+        auto [val, i, node] = heap.top();
+        heap.pop();
+        curr->next = node;
+        curr = curr->next;
+        if (node->next) heap.push({node->next->val, i, node->next});
+    }
+    return dummy.next;
+}
 ```
 
 ---
@@ -204,83 +211,55 @@ Sort the intervals by start time, then walk through them with a pointer to the l
 
 ## 📐 Core Template
 
-```python
-# ─── MERGE OVERLAPPING INTERVALS ──────────────────────────────────────────────
-def merge(intervals):
-    if not intervals:
-        return []
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    intervals.sort(key=lambda x: x[0])   # Sort by START time
-    merged = [intervals[0]]
+vector<vector<int>> merge_intervals(vector<vector<int>> intervals) {
+    if (intervals.empty()) return {};
+    sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+        return a[0] < b[0];
+    });
+    vector<vector<int>> merged{intervals[0]};
+    for (int i = 1; i < (int)intervals.size(); ++i) {
+        auto& last = merged.back();
+        if (intervals[i][0] <= last[1]) last[1] = max(last[1], intervals[i][1]);
+        else merged.push_back(intervals[i]);
+    }
+    return merged;
+}
 
-    for start, end in intervals[1:]:
-        if start <= merged[-1][1]:        # Overlaps with the last merged interval
-            merged[-1][1] = max(merged[-1][1], end)   # Extend the end
-        else:
-            merged.append([start, end])   # No overlap: commit new interval
+vector<vector<int>> insert_interval(vector<vector<int>> intervals, vector<int> new_interval) {
+    vector<vector<int>> result;
+    int i = 0, n = intervals.size();
+    while (i < n && intervals[i][1] < new_interval[0]) result.push_back(intervals[i++]);
+    while (i < n && intervals[i][0] <= new_interval[1]) {
+        new_interval[0] = min(new_interval[0], intervals[i][0]);
+        new_interval[1] = max(new_interval[1], intervals[i][1]);
+        ++i;
+    }
+    result.push_back(new_interval);
+    while (i < n) result.push_back(intervals[i++]);
+    return result;
+}
 
-    return merged
-
-
-# ─── INSERT INTERVAL ──────────────────────────────────────────────────────────
-def insert(intervals, new_interval):
-    result = []
-    i = 0
-    n = len(intervals)
-
-    # Add all intervals that END before new_interval starts
-    while i < n and intervals[i][1] < new_interval[0]:
-        result.append(intervals[i])
-        i += 1
-
-    # Merge all overlapping intervals
-    while i < n and intervals[i][0] <= new_interval[1]:
-        new_interval[0] = min(new_interval[0], intervals[i][0])
-        new_interval[1] = max(new_interval[1], intervals[i][1])
-        i += 1
-
-    result.append(new_interval)
-
-    # Add remaining intervals
-    while i < n:
-        result.append(intervals[i])
-        i += 1
-
-    return result
-
-
-# ─── MINIMUM MEETING ROOMS (event sweep) ─────────────────────────────────────
-def min_meeting_rooms(intervals):
-    # Sweep line: +1 at start, -1 at end
-    events = []
-    for start, end in intervals:
-        events.append((start, 1))         # Room needed
-        events.append((end, -1))          # Room freed
-
-    events.sort(key=lambda x: (x[0], x[1]))   # Sort by time; ends before starts at same time
-
-    rooms = max_rooms = 0
-    for time, delta in events:
-        rooms += delta
-        max_rooms = max(max_rooms, rooms)
-
-    return max_rooms
-
-
-# ─── MINIMUM ROOMS (heap approach) ───────────────────────────────────────────
-def min_meeting_rooms_heap(intervals):
-    if not intervals: return 0
-
-    intervals.sort(key=lambda x: x[0])
-    heap = []                             # Stores end times of active meetings
-
-    for start, end in intervals:
-        if heap and heap[0] <= start:
-            heapq.heapreplace(heap, end)  # Reuse the room that ended earliest
-        else:
-            heapq.heappush(heap, end)     # Need a new room
-
-    return len(heap)
+int min_meeting_rooms(const vector<vector<int>>& intervals) {
+    vector<pair<int, int>> events;
+    for (const auto& interval : intervals) {
+        events.push_back({interval[0], 1});
+        events.push_back({interval[1], -1});
+    }
+    sort(events.begin(), events.end(), [](const auto& a, const auto& b) {
+        if (a.first != b.first) return a.first < b.first;
+        return a.second < b.second;
+    });
+    int rooms = 0, best = 0;
+    for (const auto& [time, delta] : events) {
+        rooms += delta;
+        best = max(best, rooms);
+    }
+    return best;
+}
 ```
 
 ---
@@ -325,60 +304,56 @@ Topological sort gives a linear ordering of nodes in a directed acyclic graph (D
 
 ## 📐 Core Template
 
-```python
-from collections import deque, defaultdict
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── KAHN'S ALGORITHM (BFS-based topological sort) ───────────────────────────
-def topo_sort(n, prerequisites):
-    graph = defaultdict(list)         # Adjacency list
-    in_degree = [0] * n               # How many prerequisites does each node have?
+vector<int> topo_sort(int n, const vector<pair<int, int>>& prerequisites) {
+    vector<vector<int>> graph(n);
+    vector<int> indegree(n, 0);
+    for (auto [course, prereq] : prerequisites) {
+        graph[prereq].push_back(course);
+        ++indegree[course];
+    }
+    queue<int> q;
+    for (int i = 0; i < n; ++i) {
+        if (indegree[i] == 0) q.push(i);
+    }
+    vector<int> order;
+    while (!q.empty()) {
+        int node = q.front(); q.pop();
+        order.push_back(node);
+        for (int neighbor : graph[node]) {
+            if (--indegree[neighbor] == 0) q.push(neighbor);
+        }
+    }
+    return (int)order.size() == n ? order : vector<int>{};
+}
 
-    for course, prereq in prerequisites:
-        graph[prereq].append(course)
-        in_degree[course] += 1
+vector<int> topo_sort_dfs(int n, const vector<vector<int>>& graph) {
+    vector<int> state(n, 0);
+    vector<int> order;
+    bool has_cycle = false;
 
-    # Start with all nodes that have NO prerequisites
-    queue = deque([i for i in range(n) if in_degree[i] == 0])
-    order = []
+    function<void(int)> dfs = [&](int node) {
+        if (state[node] == 1) {
+            has_cycle = true;
+            return;
+        }
+        if (state[node] == 2) return;
+        state[node] = 1;
+        for (int neighbor : graph[node]) dfs(neighbor);
+        state[node] = 2;
+        order.push_back(node);
+    };
 
-    while queue:
-        node = queue.popleft()
-        order.append(node)
-
-        for neighbor in graph[node]:
-            in_degree[neighbor] -= 1            # Remove this prerequisite
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)          # Now this node is ready
-
-    # If we couldn't process all nodes, there's a cycle
-    return order if len(order) == n else []
-
-
-# ─── DFS-BASED TOPOLOGICAL SORT ───────────────────────────────────────────────
-def topo_sort_dfs(n, graph):
-    state = [0] * n                   # 0=unvisited, 1=visiting, 2=done
-    order = []
-    has_cycle = [False]
-
-    def dfs(node):
-        if state[node] == 1:          # Back edge = cycle!
-            has_cycle[0] = True
-            return
-        if state[node] == 2:
-            return
-
-        state[node] = 1               # Mark as visiting (in current path)
-        for neighbor in graph[node]:
-            dfs(neighbor)
-
-        state[node] = 2               # Mark as done
-        order.append(node)            # Post-order: add AFTER all descendants
-
-    for i in range(n):
-        if state[i] == 0:
-            dfs(i)
-
-    return [] if has_cycle[0] else order[::-1]   # Reverse post-order = topo order
+    for (int i = 0; i < n; ++i) {
+        if (state[i] == 0) dfs(i);
+    }
+    if (has_cycle) return {};
+    reverse(order.begin(), order.end());
+    return order;
+}
 ```
 
 ---
@@ -426,59 +401,59 @@ Dijkstra is BFS with a twist: instead of a queue (FIFO), use a min-heap (priorit
 
 ## 📐 Core Template
 
-```python
-import heapq
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-def dijkstra(graph, start, n):
-    # graph[u] = [(v, weight), ...]
-    dist = [float('inf')] * n
-    dist[start] = 0
-    heap = [(0, start)]               # (distance, node)
+vector<long long> dijkstra(const vector<vector<pair<int, int>>>& graph, int start, int n) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    dist[start] = 0;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> heap;
+    heap.push({0, start});
 
-    while heap:
-        d, node = heapq.heappop(heap)
+    while (!heap.empty()) {
+        auto [d, node] = heap.top(); heap.pop();
+        if (d > dist[node]) continue;
+        for (auto [neighbor, weight] : graph[node]) {
+            long long nd = d + weight;
+            if (nd < dist[neighbor]) {
+                dist[neighbor] = nd;
+                heap.push({nd, neighbor});
+            }
+        }
+    }
 
-        if d > dist[node]:            # Stale entry (already found shorter path)
-            continue
+    return dist;
+}
 
-        for neighbor, weight in graph[node]:
-            new_dist = dist[node] + weight
+pair<vector<int>, long long> dijkstra_with_path(const vector<vector<pair<int, int>>>& graph, int start, int end, int n) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    vector<int> prev(n, -1);
+    dist[start] = 0;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> heap;
+    heap.push({0, start});
 
-            if new_dist < dist[neighbor]:
-                dist[neighbor] = new_dist
-                heapq.heappush(heap, (new_dist, neighbor))
+    while (!heap.empty()) {
+        auto [d, node] = heap.top(); heap.pop();
+        if (d > dist[node]) continue;
+        if (node == end) break;
+        for (auto [neighbor, weight] : graph[node]) {
+            long long nd = d + weight;
+            if (nd < dist[neighbor]) {
+                dist[neighbor] = nd;
+                prev[neighbor] = node;
+                heap.push({nd, neighbor});
+            }
+        }
+    }
 
-    return dist
-
-
-# ─── DIJKSTRA WITH PATH RECONSTRUCTION ───────────────────────────────────────
-def dijkstra_with_path(graph, start, end, n):
-    dist = [float('inf')] * n
-    prev = [-1] * n
-    dist[start] = 0
-    heap = [(0, start)]
-
-    while heap:
-        d, node = heapq.heappop(heap)
-        if d > dist[node]: continue
-
-        if node == end:
-            break                     # Early exit when target is settled
-
-        for neighbor, weight in graph[node]:
-            new_dist = dist[node] + weight
-            if new_dist < dist[neighbor]:
-                dist[neighbor] = new_dist
-                prev[neighbor] = node
-                heapq.heappush(heap, (new_dist, neighbor))
-
-    # Reconstruct path
-    path = []
-    curr = end
-    while curr != -1:
-        path.append(curr)
-        curr = prev[curr]
-    return path[::-1], dist[end]
+    vector<int> path;
+    for (int cur = end; cur != -1; cur = prev[cur]) path.push_back(cur);
+    reverse(path.begin(), path.end());
+    return {path, dist[end]};
+}
 ```
 
 ---
@@ -530,41 +505,51 @@ Bellman-Ford works by "relaxing" all edges repeatedly — V-1 times total (where
 
 ## 📐 Core Template
 
-```python
-def bellman_ford(n, edges, start):
-    # edges = [(u, v, weight), ...]
-    dist = [float('inf')] * n
-    dist[start] = 0
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Relax all edges V-1 times
-    for _ in range(n - 1):
-        for u, v, w in edges:
-            if dist[u] != float('inf') and dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
+struct Edge {
+    int u, v, w;
+};
 
-    # Check for negative cycles: if we can still relax, cycle exists
-    for u, v, w in edges:
-        if dist[u] != float('inf') and dist[u] + w < dist[v]:
-            return None              # Negative cycle detected
+vector<long long> bellman_ford(int n, const vector<Edge>& edges, int start) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    dist[start] = 0;
 
-    return dist
+    for (int i = 0; i < n - 1; ++i) {
+        bool changed = false;
+        for (const auto& edge : edges) {
+            if (dist[edge.u] != INF && dist[edge.u] + edge.w < dist[edge.v]) {
+                dist[edge.v] = dist[edge.u] + edge.w;
+                changed = true;
+            }
+        }
+        if (!changed) break;
+    }
 
+    return dist;
+}
 
-# ─── K STOPS VARIANT (for "Cheapest Flights Within K Stops") ─────────────────
-def find_cheapest_price(n, flights, src, dst, k):
-    prices = [float('inf')] * n
-    prices[src] = 0
+int find_cheapest_price(int n, const vector<vector<int>>& flights, int src, int dst, int k) {
+    const int INF = 1e9;
+    vector<int> prices(n, INF);
+    prices[src] = 0;
 
-    for i in range(k + 1):           # Relax exactly k+1 times (k stops = k+1 edges)
-        temp = prices[:]             # Work on a COPY to not use current-round updates
+    for (int i = 0; i <= k; ++i) {
+        vector<int> next = prices;
+        for (const auto& flight : flights) {
+            int u = flight[0], v = flight[1], w = flight[2];
+            if (prices[u] != INF && prices[u] + w < next[v]) {
+                next[v] = prices[u] + w;
+            }
+        }
+        prices.swap(next);
+    }
 
-        for u, v, w in flights:
-            if prices[u] != float('inf') and prices[u] + w < temp[v]:
-                temp[v] = prices[u] + w
-
-        prices = temp
-
-    return prices[dst] if prices[dst] != float('inf') else -1
+    return prices[dst] == INF ? -1 : prices[dst];
+}
 ```
 
 ---
@@ -609,62 +594,62 @@ Each node starts as its own group leader. When you `union(A, B)`, you make one g
 
 ## 📐 Core Template
 
-```python
-class UnionFind:
-    def __init__(self, n):
-        self.parent = list(range(n))   # Initially, each node is its own parent
-        self.rank = [0] * n            # Tree height (for union by rank)
-        self.components = n            # Number of separate groups
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    def find(self, x):
-        # Path compression: make x point directly to root
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])   # Recursive compression
-        return self.parent[x]
+class UnionFind {
+public:
+    vector<int> parent;
+    vector<int> rank;
+    int components;
 
-    def union(self, x, y):
-        px, py = self.find(x), self.find(y)
+    UnionFind(int n) : parent(n), rank(n, 0), components(n) {
+        iota(parent.begin(), parent.end(), 0);
+    }
 
-        if px == py:
-            return False               # Already in the same group (edge is redundant!)
+    int find(int x) {
+        if (parent[x] != x) parent[x] = find(parent[x]);
+        return parent[x];
+    }
 
-        # Union by rank: attach smaller tree to larger
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px            # px should be the larger tree
+    bool unite(int x, int y) {
+        int px = find(x), py = find(y);
+        if (px == py) return false;
+        if (rank[px] < rank[py]) swap(px, py);
+        parent[py] = px;
+        if (rank[px] == rank[py]) ++rank[px];
+        --components;
+        return true;
+    }
 
-        self.parent[py] = px           # Attach py's tree under px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
+};
 
-        self.components -= 1
-        return True                    # Successfully merged two groups
+int num_islands(vector<vector<char>>& grid) {
+    if (grid.empty()) return 0;
+    int rows = grid.size(), cols = grid[0].size();
+    UnionFind uf(rows * cols);
+    int islands = 0;
+    auto id = [&](int r, int c) { return r * cols + c; };
 
-    def connected(self, x, y):
-        return self.find(x) == self.find(y)
-
-    def count(self):
-        return self.components
-
-
-# ─── USAGE EXAMPLE: Number of Islands ────────────────────────────────────────
-def num_islands(grid):
-    if not grid: return 0
-
-    rows, cols = len(grid), len(grid[0])
-    uf = UnionFind(rows * cols)
-    islands = 0
-
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == '1':
-                islands += 1
-                for dr, dc in [(0,1),(1,0)]:   # Only check right and down
-                    nr, nc = r + dr, c + dc
-                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == '1':
-                        if uf.union(r * cols + c, nr * cols + nc):
-                            islands -= 1        # Two islands became one
-
-    return islands
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (grid[r][c] == '1') {
+                ++islands;
+                for (auto [dr, dc] : vector<pair<int, int>>{{0, 1}, {1, 0}}) {
+                    int nr = r + dr, nc = c + dc;
+                    if (0 <= nr && nr < rows && 0 <= nc && nc < cols && grid[nr][nc] == '1') {
+                        if (uf.unite(id(r, c), id(nr, nc))) --islands;
+                    }
+                }
+            }
+        }
+    }
+    return islands;
+}
 ```
 
 ---
@@ -718,57 +703,66 @@ A Trie is a tree where each path from root to a node spells a word (or prefix). 
 
 ## 📐 Core Template
 
-```python
-class TrieNode:
-    def __init__(self):
-        self.children = {}             # char → TrieNode
-        self.is_end = False            # True if a complete word ends here
-        # Optional: store the word itself at the node for backtracking problems
-        self.word = None
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
+struct TrieNode {
+    unordered_map<char, TrieNode*> children;
+    bool is_end = false;
+    string word;
+};
 
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
+class Trie {
+public:
+    TrieNode* root;
 
-    def insert(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-        node.is_end = True
-        node.word = word               # Store for backtracking retrieval
+    Trie() : root(new TrieNode()) {}
 
-    def search(self, word):
-        node = self.root
-        for char in word:
-            if char not in node.children:
-                return False
-            node = node.children[char]
-        return node.is_end             # Must end a complete word
+    void insert(const string& word) {
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (!node->children.count(ch)) node->children[ch] = new TrieNode();
+            node = node->children[ch];
+        }
+        node->is_end = true;
+        node->word = word;
+    }
 
-    def starts_with(self, prefix):
-        node = self.root
-        for char in prefix:
-            if char not in node.children:
-                return False
-            node = node.children[char]
-        return True                    # Prefix exists in the trie
+    bool search(const string& word) {
+        TrieNode* node = root;
+        for (char ch : word) {
+            if (!node->children.count(ch)) return false;
+            node = node->children[ch];
+        }
+        return node->is_end;
+    }
 
-    def search_with_wildcard(self, word):
-        """Supports '.' as wildcard matching any single character"""
-        def dfs(node, i):
-            if i == len(word):
-                return node.is_end
-            char = word[i]
-            if char == '.':
-                return any(dfs(child, i + 1) for child in node.children.values())
-            if char not in node.children:
-                return False
-            return dfs(node.children[char], i + 1)
+    bool starts_with(const string& prefix) {
+        TrieNode* node = root;
+        for (char ch : prefix) {
+            if (!node->children.count(ch)) return false;
+            node = node->children[ch];
+        }
+        return true;
+    }
 
-        return dfs(self.root, 0)
+    bool search_with_wildcard(const string& word) {
+        function<bool(TrieNode*, int)> dfs = [&](TrieNode* node, int i) {
+            if (i == (int)word.size()) return node->is_end;
+            char ch = word[i];
+            if (ch == '.') {
+                for (auto& entry : node->children) {
+                    if (dfs(entry.second, i + 1)) return true;
+                }
+                return false;
+            }
+            if (!node->children.count(ch)) return false;
+            return dfs(node->children[ch], i + 1);
+        };
+        return dfs(root, 0);
+    }
+};
 ```
 
 ---
@@ -812,69 +806,78 @@ Prefix Sum is great for static arrays but breaks when values update (you'd have 
 
 ## 📐 Core Template
 
-```python
-# ─── FENWICK TREE (BIT) — Point Update, Prefix Sum Query ─────────────────────
-class FenwickTree:
-    def __init__(self, n):
-        self.n = n
-        self.tree = [0] * (n + 1)     # 1-indexed
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    def update(self, i, delta):
-        """Add delta to index i (1-indexed)"""
-        while i <= self.n:
-            self.tree[i] += delta
-            i += i & (-i)             # Move to next responsible index
+class FenwickTree {
+public:
+    int n;
+    vector<long long> tree;
 
-    def query(self, i):
-        """Get prefix sum from 1 to i (inclusive)"""
-        total = 0
-        while i > 0:
-            total += self.tree[i]
-            i -= i & (-i)             # Move to parent
-        return total
+    FenwickTree(int n) : n(n), tree(n + 1, 0) {}
 
-    def range_query(self, left, right):
-        """Get sum of elements from left to right (both 1-indexed)"""
-        return self.query(right) - self.query(left - 1)
+    void update(int i, long long delta) {
+        while (i <= n) {
+            tree[i] += delta;
+            i += i & -i;
+        }
+    }
 
+    long long query(int i) const {
+        long long total = 0;
+        while (i > 0) {
+            total += tree[i];
+            i -= i & -i;
+        }
+        return total;
+    }
 
-# ─── SEGMENT TREE — Range Update, Range Query ─────────────────────────────────
-class SegmentTree:
-    def __init__(self, nums):
-        self.n = len(nums)
-        self.tree = [0] * (4 * self.n)
-        self._build(nums, 0, 0, self.n - 1)
+    long long range_query(int left, int right) const {
+        return query(right) - query(left - 1);
+    }
+};
 
-    def _build(self, nums, node, start, end):
-        if start == end:
-            self.tree[node] = nums[start]
-        else:
-            mid = (start + end) // 2
-            self._build(nums, 2*node+1, start, mid)
-            self._build(nums, 2*node+2, mid+1, end)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+class SegmentTree {
+public:
+    int n;
+    vector<long long> tree;
 
-    def update(self, idx, val, node=0, start=0, end=None):
-        if end is None: end = self.n - 1
-        if start == end:
-            self.tree[node] = val
-        else:
-            mid = (start + end) // 2
-            if idx <= mid:
-                self.update(idx, val, 2*node+1, start, mid)
-            else:
-                self.update(idx, val, 2*node+2, mid+1, end)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+    SegmentTree(const vector<int>& nums) {
+        n = nums.size();
+        tree.assign(4 * max(1, n), 0);
+        if (n > 0) build(nums, 0, 0, n - 1);
+    }
 
-    def query(self, left, right, node=0, start=0, end=None):
-        if end is None: end = self.n - 1
-        if right < start or end < left:
-            return 0                   # Out of range
-        if left <= start and end <= right:
-            return self.tree[node]     # Fully within range
-        mid = (start + end) // 2
-        return (self.query(left, right, 2*node+1, start, mid) +
-                self.query(left, right, 2*node+2, mid+1, end))
+    void build(const vector<int>& nums, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = nums[start];
+            return;
+        }
+        int mid = (start + end) / 2;
+        build(nums, 2 * node + 1, start, mid);
+        build(nums, 2 * node + 2, mid + 1, end);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+    }
+
+    void update(int idx, int val, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = val;
+            return;
+        }
+        int mid = (start + end) / 2;
+        if (idx <= mid) update(idx, val, 2 * node + 1, start, mid);
+        else update(idx, val, 2 * node + 2, mid + 1, end);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+    }
+
+    long long query(int left, int right, int node, int start, int end) const {
+        if (right < start || end < left) return 0;
+        if (left <= start && end <= right) return tree[node];
+        int mid = (start + end) / 2;
+        return query(left, right, 2 * node + 1, start, mid) + query(left, right, 2 * node + 2, mid + 1, end);
+    }
+};
 ```
 
 ---
@@ -918,78 +921,79 @@ Linked list problems require careful pointer choreography. The key is to always 
 
 ## 📐 Core Template
 
-```python
-# ─── REVERSE LINKED LIST ──────────────────────────────────────────────────────
-def reverse_list(head):
-    prev, curr = None, head
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while curr:
-        next_node = curr.next          # Save next before overwriting
-        curr.next = prev               # Reverse the pointer
-        prev = curr                    # Move prev forward
-        curr = next_node               # Move curr forward
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-    return prev                        # New head is the old tail
+ListNode* reverse_list(ListNode* head) {
+    ListNode* prev = nullptr;
+    ListNode* curr = head;
+    while (curr) {
+        ListNode* next_node = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next_node;
+    }
+    return prev;
+}
 
+ListNode* reverse_k_group(ListNode* head, int k) {
+    ListNode* node = head;
+    int count = 0;
+    while (node && count < k) {
+        node = node->next;
+        ++count;
+    }
+    if (count < k) return head;
 
-# ─── REVERSE IN K-GROUPS ──────────────────────────────────────────────────────
-def reverse_k_group(head, k):
-    # Check if there are k nodes left
-    count, node = 0, head
-    while node and count < k:
-        node = node.next
-        count += 1
-    if count < k:
-        return head                    # Fewer than k nodes: don't reverse
+    ListNode* prev = nullptr;
+    ListNode* curr = head;
+    for (int i = 0; i < k; ++i) {
+        ListNode* next_node = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next_node;
+    }
+    head->next = reverse_k_group(curr, k);
+    return prev;
+}
 
-    # Reverse k nodes
-    prev, curr = None, head
-    for _ in range(k):
-        next_node = curr.next
-        curr.next = prev
-        prev = curr
-        curr = next_node
+ListNode* merge_two_sorted(ListNode* l1, ListNode* l2) {
+    ListNode dummy(0);
+    ListNode* curr = &dummy;
+    while (l1 && l2) {
+        if (l1->val <= l2->val) {
+            curr->next = l1;
+            l1 = l1->next;
+        } else {
+            curr->next = l2;
+            l2 = l2->next;
+        }
+        curr = curr->next;
+    }
+    curr->next = l1 ? l1 : l2;
+    return dummy.next;
+}
 
-    # head is now the tail of reversed group
-    head.next = reverse_k_group(curr, k)   # Recursively handle rest
-    return prev                            # Return new head of this group
-
-
-# ─── MERGE TWO SORTED LISTS ───────────────────────────────────────────────────
-def merge_two_sorted(l1, l2):
-    dummy = ListNode(0)
-    curr = dummy
-
-    while l1 and l2:
-        if l1.val <= l2.val:
-            curr.next = l1
-            l1 = l1.next
-        else:
-            curr.next = l2
-            l2 = l2.next
-        curr = curr.next
-
-    curr.next = l1 or l2               # Attach remaining nodes
-    return dummy.next
-
-
-# ─── NTH NODE FROM END ────────────────────────────────────────────────────────
-def remove_nth_from_end(head, n):
-    dummy = ListNode(0)
-    dummy.next = head
-    fast = slow = dummy
-
-    # Move fast n+1 steps ahead
-    for _ in range(n + 1):
-        fast = fast.next
-
-    # Move both until fast reaches end
-    while fast:
-        fast = fast.next
-        slow = slow.next
-
-    slow.next = slow.next.next         # Remove the nth node
-    return dummy.next
+ListNode* remove_nth_from_end(ListNode* head, int n) {
+    ListNode dummy(0);
+    dummy.next = head;
+    ListNode* fast = &dummy;
+    ListNode* slow = &dummy;
+    for (int i = 0; i < n + 1; ++i) fast = fast->next;
+    while (fast) {
+        fast = fast->next;
+        slow = slow->next;
+    }
+    slow->next = slow->next->next;
+    return dummy.next;
+}
 ```
 
 ---
@@ -1035,88 +1039,80 @@ Matrix problems require understanding the coordinate system and the relationship
 
 ## 📐 Core Template
 
-```python
-# ─── ROTATE MATRIX 90° CLOCKWISE ─────────────────────────────────────────────
-def rotate(matrix):
-    n = len(matrix)
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Step 1: Transpose (swap matrix[i][j] with matrix[j][i])
-    for i in range(n):
-        for j in range(i + 1, n):
-            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+void rotate(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            swap(matrix[i][j], matrix[j][i]);
+        }
+    }
+    for (auto& row : matrix) reverse(row.begin(), row.end());
+}
 
-    # Step 2: Reverse each row
-    for row in matrix:
-        row.reverse()
+vector<int> spiral_order(const vector<vector<int>>& matrix) {
+    vector<int> result;
+    if (matrix.empty()) return result;
+    int top = 0, bottom = matrix.size() - 1;
+    int left = 0, right = matrix[0].size() - 1;
+    while (top <= bottom && left <= right) {
+        for (int c = left; c <= right; ++c) result.push_back(matrix[top][c]);
+        ++top;
+        for (int r = top; r <= bottom; ++r) result.push_back(matrix[r][right]);
+        --right;
+        if (top <= bottom) {
+            for (int c = right; c >= left; --c) result.push_back(matrix[bottom][c]);
+            --bottom;
+        }
+        if (left <= right) {
+            for (int r = bottom; r >= top; --r) result.push_back(matrix[r][left]);
+            ++left;
+        }
+    }
+    return result;
+}
 
+void set_zeroes(vector<vector<int>>& matrix) {
+    int rows = matrix.size(), cols = matrix[0].size();
+    vector<int> zero_rows(rows, 0), zero_cols(cols, 0);
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (matrix[r][c] == 0) {
+                zero_rows[r] = 1;
+                zero_cols[c] = 1;
+            }
+        }
+    }
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (zero_rows[r] || zero_cols[c]) matrix[r][c] = 0;
+        }
+    }
+}
 
-# ─── SPIRAL ORDER TRAVERSAL ───────────────────────────────────────────────────
-def spiral_order(matrix):
-    result = []
-    top, bottom = 0, len(matrix) - 1
-    left, right = 0, len(matrix[0]) - 1
+vector<pair<int, int>> get_neighbors_4(int r, int c, int rows, int cols) {
+    vector<pair<int, int>> neighbors;
+    for (auto [dr, dc] : vector<pair<int, int>>{{0,1},{0,-1},{1,0},{-1,0}}) {
+        int nr = r + dr, nc = c + dc;
+        if (0 <= nr && nr < rows && 0 <= nc && nc < cols) neighbors.push_back({nr, nc});
+    }
+    return neighbors;
+}
 
-    while top <= bottom and left <= right:
-        # Traverse right (top row)
-        for col in range(left, right + 1):
-            result.append(matrix[top][col])
-        top += 1
-
-        # Traverse down (right column)
-        for row in range(top, bottom + 1):
-            result.append(matrix[row][right])
-        right -= 1
-
-        # Traverse left (bottom row)
-        if top <= bottom:
-            for col in range(right, left - 1, -1):
-                result.append(matrix[bottom][col])
-            bottom -= 1
-
-        # Traverse up (left column)
-        if left <= right:
-            for row in range(bottom, top - 1, -1):
-                result.append(matrix[row][left])
-            left += 1
-
-    return result
-
-
-# ─── SET MATRIX ZEROES (in-place) ────────────────────────────────────────────
-def set_zeroes(matrix):
-    rows, cols = len(matrix), len(matrix[0])
-    zero_rows, zero_cols = set(), set()
-
-    # First pass: find which rows and cols have zeros
-    for r in range(rows):
-        for c in range(cols):
-            if matrix[r][c] == 0:
-                zero_rows.add(r)
-                zero_cols.add(c)
-
-    # Second pass: set zeros
-    for r in range(rows):
-        for c in range(cols):
-            if r in zero_rows or c in zero_cols:
-                matrix[r][c] = 0
-
-
-# ─── USEFUL GRID UTILITIES ───────────────────────────────────────────────────
-def get_neighbors_4(r, c, rows, cols):
-    """4-directional grid neighbors"""
-    for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < rows and 0 <= nc < cols:
-            yield nr, nc
-
-def get_neighbors_8(r, c, rows, cols):
-    """8-directional grid neighbors (including diagonals)"""
-    for dr in [-1, 0, 1]:
-        for dc in [-1, 0, 1]:
-            if dr == 0 and dc == 0: continue
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                yield nr, nc
+vector<pair<int, int>> get_neighbors_8(int r, int c, int rows, int cols) {
+    vector<pair<int, int>> neighbors;
+    for (int dr = -1; dr <= 1; ++dr) {
+        for (int dc = -1; dc <= 1; ++dc) {
+            if (dr == 0 && dc == 0) continue;
+            int nr = r + dr, nc = c + dc;
+            if (0 <= nr && nr < rows && 0 <= nc && nc < cols) neighbors.push_back({nr, nc});
+        }
+    }
+    return neighbors;
+}
 ```
 
 ---

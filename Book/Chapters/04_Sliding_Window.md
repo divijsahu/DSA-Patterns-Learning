@@ -36,70 +36,70 @@ Imagine a magnifying glass sliding across a newspaper. Instead of re-reading the
 
 ## 📐 Core Template
 
-```python
-# ─── FIXED SIZE WINDOW ────────────────────────────────────────────────────────
-def max_sum_fixed(arr, k):
-    # O(n) instead of O(n*k)
-    window_sum = sum(arr[:k])          # Initialize first window
-    max_sum = window_sum
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(k, len(arr)):
-        window_sum += arr[i] - arr[i - k]   # Add new tail, remove old head
-        max_sum = max(max_sum, window_sum)
+int max_sum_fixed(const vector<int>& arr, int k) {
+    int window_sum = 0;
+    for (int i = 0; i < k; ++i) window_sum += arr[i];
+    int best = window_sum;
+    for (int i = k; i < (int)arr.size(); ++i) {
+        window_sum += arr[i] - arr[i - k];
+        best = max(best, window_sum);
+    }
+    return best;
+}
 
-    return max_sum
+int longest_valid_window(const string& s, int k) {
+    unordered_map<char, int> freq;
+    int left = 0;
+    int result = 0;
+    for (int right = 0; right < (int)s.size(); ++right) {
+        freq[s[right]]++;
+        while ((int)freq.size() > k) {
+            if (--freq[s[left]] == 0) freq.erase(s[left]);
+            ++left;
+        }
+        result = max(result, right - left + 1);
+    }
+    return result;
+}
 
+string shortest_valid_window(const string& s, const unordered_map<char, int>& target_counts) {
+    unordered_map<char, int> need = target_counts;
+    int missing = 0;
+    for (const auto& entry : need) missing += entry.second;
 
-# ─── VARIABLE SIZE WINDOW (find longest valid window) ────────────────────────
-def longest_valid_window(s, k):
-    # Example: longest substring with at most k distinct characters
-    left = 0
-    freq = {}                          # Tracks contents of the current window
-    result = 0
+    int left = 0;
+    int best_len = INT_MAX;
+    int best_left = 0;
 
-    for right in range(len(s)):
-        # ── EXPAND: add s[right] to window ───────────────────────────────────
-        freq[s[right]] = freq.get(s[right], 0) + 1
+    for (int right = 0; right < (int)s.size(); ++right) {
+        auto it = need.find(s[right]);
+        if (it != need.end()) {
+            if (it->second > 0) --missing;
+            --it->second;
+        }
 
-        # ── SHRINK: while window is INVALID, move left ────────────────────────
-        while len(freq) > k:           # Condition depends on the problem!
-            freq[s[left]] -= 1
-            if freq[s[left]] == 0:
-                del freq[s[left]]
-            left += 1
+        while (missing == 0) {
+            int window_len = right - left + 1;
+            if (window_len < best_len) {
+                best_len = window_len;
+                best_left = left;
+            }
 
-        # ── RECORD: window is now valid, update result ─────────────────────────
-        result = max(result, right - left + 1)
+            auto left_it = need.find(s[left]);
+            if (left_it != need.end()) {
+                ++left_it->second;
+                if (left_it->second > 0) ++missing;
+            }
+            ++left;
+        }
+    }
 
-    return result
-
-
-# ─── VARIABLE SIZE WINDOW (find shortest valid window) ───────────────────────
-def shortest_valid_window(s, target_counts):
-    # Example: minimum window containing all target characters
-    need = dict(target_counts)         # Characters still needed
-    missing = sum(need.values())       # Total characters still needed
-    left = 0
-    best = (float('inf'), 0, 0)        # (length, left, right)
-
-    for right, char in enumerate(s):
-        if char in need:
-            need[char] -= 1
-            if need[char] == 0:
-                missing -= 1           # One more character type is satisfied
-
-        while missing == 0:            # Window is valid — try to shrink
-            span = right - left + 1
-            if span < best[0]:
-                best = (span, left, right)
-
-            if s[left] in need:
-                need[s[left]] += 1
-                if need[s[left]] > 0:
-                    missing += 1       # Window becomes invalid after shrinking
-            left += 1
-
-    return s[best[1]: best[2] + 1] if best[0] != float('inf') else ""
+    return best_len == INT_MAX ? string() : s.substr(best_left, best_len);
+}
 ```
 
 ---

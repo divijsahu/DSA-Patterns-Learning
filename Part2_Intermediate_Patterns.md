@@ -50,91 +50,94 @@ Drop a pebble in still water and watch the ripples. Each ripple ring represents 
 
 ## 📐 Core Template
 
-```python
-from collections import deque
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── STANDARD GRAPH BFS ───────────────────────────────────────────────────────
-def bfs(graph, start, target):
-    queue = deque([start])
-    visited = {start}              # Add to visited when ENQUEUING, not dequeuing
-    steps = 0
+int bfs(const unordered_map<int, vector<int>>& graph, int start, int target) {
+    queue<int> q;
+    unordered_set<int> visited;
+    q.push(start);
+    visited.insert(start);
+    int steps = 0;
 
-    while queue:
-        # Process all nodes at the current distance level
-        for _ in range(len(queue)):
-            node = queue.popleft()
+    while (!q.empty()) {
+        int level_size = q.size();
+        while (level_size--) {
+            int node = q.front(); q.pop();
+            if (node == target) return steps;
+            auto it = graph.find(node);
+            if (it == graph.end()) continue;
+            for (int neighbor : it->second) {
+                if (!visited.count(neighbor)) {
+                    visited.insert(neighbor);
+                    q.push(neighbor);
+                }
+            }
+        }
+        ++steps;
+    }
+    return -1;
+}
 
-            if node == target:
-                return steps
+int bfs_grid(vector<vector<int>>& grid, int start_r, int start_c, int target_r, int target_c) {
+    int rows = grid.size(), cols = grid[0].size();
+    queue<pair<int, int>> q;
+    vector<vector<int>> visited(rows, vector<int>(cols, 0));
+    q.push({start_r, start_c});
+    visited[start_r][start_c] = 1;
+    int steps = 0;
+    vector<pair<int, int>> dirs{{0,1},{0,-1},{1,0},{-1,0}};
 
-            for neighbor in graph[node]:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
+    while (!q.empty()) {
+        int level_size = q.size();
+        while (level_size--) {
+            auto [r, c] = q.front(); q.pop();
+            if (r == target_r && c == target_c) return steps;
+            for (auto [dr, dc] : dirs) {
+                int nr = r + dr, nc = c + dc;
+                if (0 <= nr && nr < rows && 0 <= nc && nc < cols && !visited[nr][nc] && grid[nr][nc] != 0) {
+                    visited[nr][nc] = 1;
+                    q.push({nr, nc});
+                }
+            }
+        }
+        ++steps;
+    }
+    return -1;
+}
 
-        steps += 1                 # Completed one full level
+int multi_source_bfs(vector<vector<int>>& grid) {
+    int rows = grid.size(), cols = grid[0].size();
+    queue<pair<int, int>> q;
+    int fresh_count = 0;
 
-    return -1                      # Target unreachable
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (grid[r][c] == 2) q.push({r, c});
+            else if (grid[r][c] == 1) ++fresh_count;
+        }
+    }
 
-
-# ─── GRID BFS ─────────────────────────────────────────────────────────────────
-def bfs_grid(grid, start_r, start_c, target_r, target_c):
-    rows, cols = len(grid), len(grid[0])
-    queue = deque([(start_r, start_c)])
-    visited = {(start_r, start_c)}
-    steps = 0
-
-    # 4-directional movement (add diagonals for 8-directional)
-    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
-    while queue:
-        for _ in range(len(queue)):
-            r, c = queue.popleft()
-
-            if r == target_r and c == target_c:
-                return steps
-
-            for dr, dc in directions:
-                nr, nc = r + dr, c + dc
-                if (0 <= nr < rows and 0 <= nc < cols
-                        and (nr, nc) not in visited
-                        and grid[nr][nc] != 0):      # 0 = blocked
-                    visited.add((nr, nc))
-                    queue.append((nr, nc))
-
-        steps += 1
-
-    return -1
-
-
-# ─── MULTI-SOURCE BFS ─────────────────────────────────────────────────────────
-def multi_source_bfs(grid):
-    # Example: rotting oranges — all sources spread simultaneously
-    rows, cols = len(grid), len(grid[0])
-    queue = deque()
-    fresh_count = 0
-
-    # Initialize: add ALL sources at once
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 2:       # Rotten orange = source
-                queue.append((r, c))
-            elif grid[r][c] == 1:
-                fresh_count += 1
-
-    minutes = 0
-    while queue and fresh_count > 0:
-        for _ in range(len(queue)):
-            r, c = queue.popleft()
-            for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
-                    grid[nr][nc] = 2
-                    fresh_count -= 1
-                    queue.append((nr, nc))
-        minutes += 1
-
-    return minutes if fresh_count == 0 else -1
+    int minutes = 0;
+    vector<pair<int, int>> dirs{{0,1},{0,-1},{1,0},{-1,0}};
+    while (!q.empty() && fresh_count > 0) {
+        int level_size = q.size();
+        while (level_size--) {
+            auto [r, c] = q.front(); q.pop();
+            for (auto [dr, dc] : dirs) {
+                int nr = r + dr, nc = c + dc;
+                if (0 <= nr && nr < rows && 0 <= nc && nc < cols && grid[nr][nc] == 1) {
+                    grid[nr][nc] = 2;
+                    --fresh_count;
+                    q.push({nr, nc});
+                }
+            }
+        }
+        ++minutes;
+    }
+    return fresh_count == 0 ? minutes : -1;
+}
 ```
 
 ---
@@ -219,61 +222,67 @@ DFS is the algorithm that goes all-in before giving up. Imagine navigating a maz
 
 ## 📐 Core Template
 
-```python
-# ─── GRAPH DFS (recursive) ────────────────────────────────────────────────────
-def dfs(graph, node, visited):
-    visited.add(node)
-    process(node)                          # Do something with current node
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for neighbor in graph[node]:
-        if neighbor not in visited:
-            dfs(graph, neighbor, visited)
+void dfs(const unordered_map<int, vector<int>>& graph, int node, unordered_set<int>& visited) {
+    visited.insert(node);
+    auto it = graph.find(node);
+    if (it == graph.end()) return;
+    for (int neighbor : it->second) {
+        if (!visited.count(neighbor)) dfs(graph, neighbor, visited);
+    }
+}
 
-# ─── GRAPH DFS (iterative) ────────────────────────────────────────────────────
-def dfs_iterative(graph, start):
-    stack = [start]
-    visited = {start}
+void dfs_iterative(const unordered_map<int, vector<int>>& graph, int start) {
+    stack<int> st;
+    unordered_set<int> visited;
+    st.push(start);
+    visited.insert(start);
 
-    while stack:
-        node = stack.pop()
-        process(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                stack.append(neighbor)
+    while (!st.empty()) {
+        int node = st.top(); st.pop();
+        auto it = graph.find(node);
+        if (it == graph.end()) continue;
+        for (int neighbor : it->second) {
+            if (!visited.count(neighbor)) {
+                visited.insert(neighbor);
+                st.push(neighbor);
+            }
+        }
+    }
+}
 
-# ─── CYCLE DETECTION IN DIRECTED GRAPH ───────────────────────────────────────
-def has_cycle(graph, n):
-    # 0 = unvisited, 1 = in current DFS path (gray), 2 = fully processed (black)
-    state = [0] * n
+bool has_cycle_directed(const vector<vector<int>>& graph) {
+    int n = graph.size();
+    vector<int> state(n, 0);
 
-    def dfs_cycle(node):
-        state[node] = 1                    # Mark as "in progress"
+    function<bool(int)> dfs_cycle = [&](int node) {
+        state[node] = 1;
+        for (int neighbor : graph[node]) {
+            if (state[neighbor] == 1) return true;
+            if (state[neighbor] == 0 && dfs_cycle(neighbor)) return true;
+        }
+        state[node] = 2;
+        return false;
+    };
 
-        for neighbor in graph[node]:
-            if state[neighbor] == 1:
-                return True                # Back edge = cycle!
-            if state[neighbor] == 0:
-                if dfs_cycle(neighbor):
-                    return True
+    for (int i = 0; i < n; ++i) {
+        if (state[i] == 0 && dfs_cycle(i)) return true;
+    }
+    return false;
+}
 
-        state[node] = 2                    # Mark as "done"
-        return False
-
-    return any(dfs_cycle(i) for i in range(n) if state[i] == 0)
-
-# ─── GRID DFS ─────────────────────────────────────────────────────────────────
-def dfs_grid(grid, r, c):
-    rows, cols = len(grid), len(grid[0])
-    if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != 1:
-        return                             # Out of bounds or not land
-
-    grid[r][c] = 0                         # Mark visited (in-place, avoid set)
-
-    dfs_grid(grid, r + 1, c)
-    dfs_grid(grid, r - 1, c)
-    dfs_grid(grid, r, c + 1)
-    dfs_grid(grid, r, c - 1)
+void dfs_grid(vector<vector<int>>& grid, int r, int c) {
+    int rows = grid.size(), cols = grid[0].size();
+    if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] != 1) return;
+    grid[r][c] = 0;
+    dfs_grid(grid, r + 1, c);
+    dfs_grid(grid, r - 1, c);
+    dfs_grid(grid, r, c + 1);
+    dfs_grid(grid, r, c - 1);
+}
 ```
 
 ---
@@ -350,82 +359,56 @@ Trees are recursion's natural habitat. Every tree problem can be reduced to: "Gi
 
 ## 📐 Core Template
 
-```python
-# ─── POST-ORDER (most common for aggregation) ─────────────────────────────────
-def tree_dfs(node):
-    if not node:
-        return base_value              # Base case — what to return for null
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    left_val = tree_dfs(node.left)    # Recurse on left
-    right_val = tree_dfs(node.right)  # Recurse on right
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};
 
-    # Use left_val, right_val, and node.val to compute THIS node's return value
-    return combine(left_val, right_val, node.val)
+int diameterOfBinaryTree(TreeNode* root) {
+    int best = 0;
+    function<int(TreeNode*)> height = [&](TreeNode* node) {
+        if (!node) return 0;
+        int left_h = height(node->left);
+        int right_h = height(node->right);
+        best = max(best, left_h + right_h);
+        return 1 + max(left_h, right_h);
+    };
+    height(root);
+    return best;
+}
 
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+    if (!root || root == p || root == q) return root;
+    TreeNode* left = lowestCommonAncestor(root->left, p, q);
+    TreeNode* right = lowestCommonAncestor(root->right, p, q);
+    if (left && right) return root;
+    return left ? left : right;
+}
 
-# ─── DIAMETER OF BINARY TREE ──────────────────────────────────────────────────
-def diameter_of_binary_tree(root):
-    max_diameter = [0]                 # Use list to allow mutation in nested func
+bool hasPathSum(TreeNode* root, int targetSum) {
+    if (!root) return false;
+    if (!root->left && !root->right) return root->val == targetSum;
+    return hasPathSum(root->left, targetSum - root->val) || hasPathSum(root->right, targetSum - root->val);
+}
 
-    def height(node):
-        if not node:
-            return 0
-
-        left_h = height(node.left)
-        right_h = height(node.right)
-
-        # The diameter passing THROUGH this node = left_height + right_height
-        max_diameter[0] = max(max_diameter[0], left_h + right_h)
-
-        return 1 + max(left_h, right_h)   # Return height to parent
-
-    height(root)
-    return max_diameter[0]
-
-
-# ─── LOWEST COMMON ANCESTOR ───────────────────────────────────────────────────
-def lowest_common_ancestor(root, p, q):
-    if not root or root == p or root == q:
-        return root                    # Found one of the targets (or null)
-
-    left = lowest_common_ancestor(root.left, p, q)
-    right = lowest_common_ancestor(root.right, p, q)
-
-    if left and right:
-        return root                    # p and q are in different subtrees
-    return left or right               # Both are in the same subtree
-
-
-# ─── PATH SUM (root-to-leaf) ──────────────────────────────────────────────────
-def has_path_sum(root, target):
-    if not root:
-        return False
-    if not root.left and not root.right:   # Leaf node
-        return root.val == target
-
-    remaining = target - root.val
-    return has_path_sum(root.left, remaining) or has_path_sum(root.right, remaining)
-
-
-# ─── BINARY TREE MAXIMUM PATH SUM ────────────────────────────────────────────
-def max_path_sum(root):
-    max_sum = [float('-inf')]
-
-    def gain(node):
-        if not node:
-            return 0
-
-        left_gain = max(gain(node.left), 0)     # Ignore negative paths
-        right_gain = max(gain(node.right), 0)
-
-        # Update global max: path going through this node
-        max_sum[0] = max(max_sum[0], node.val + left_gain + right_gain)
-
-        # Return the best single-branch extension to parent
-        return node.val + max(left_gain, right_gain)
-
-    gain(root)
-    return max_sum[0]
+int maxPathSum(TreeNode* root) {
+    int best = INT_MIN;
+    function<int(TreeNode*)> gain = [&](TreeNode* node) {
+        if (!node) return 0;
+        int left_gain = max(gain(node->left), 0);
+        int right_gain = max(gain(node->right), 0);
+        best = max(best, node->val + left_gain + right_gain);
+        return node->val + max(left_gain, right_gain);
+    };
+    gain(root);
+    return best;
+}
 ```
 
 ---
@@ -513,124 +496,93 @@ The power is in **pruning**: if you can detect invalidity early, you skip enormo
 
 ## 📐 Core Template
 
-```python
-# ─── UNIVERSAL BACKTRACKING TEMPLATE ─────────────────────────────────────────
-def backtrack(state, choices, result, ...):
-    # ── BASE CASE: Is the current state a complete valid solution? ────────────
-    if is_complete(state):
-        result.append(state[:])        # CRITICAL: append a COPY, not a reference
-        return
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for choice in get_choices(choices):
-        # ── PRUNING: Skip this choice if it leads to an invalid state ─────────
-        if not is_valid(state, choice):
-            continue
+vector<vector<int>> subsets(const vector<int>& nums) {
+    vector<vector<int>> result;
+    vector<int> current;
+    function<void(int)> backtrack = [&](int start) {
+        result.push_back(current);
+        for (int i = start; i < (int)nums.size(); ++i) {
+            current.push_back(nums[i]);
+            backtrack(i + 1);
+            current.pop_back();
+        }
+    };
+    backtrack(0);
+    return result;
+}
 
-        # ── CHOOSE: Add the choice to current state ───────────────────────────
-        state.append(choice)
-        mark_used(choice)
+vector<vector<int>> permutations(const vector<int>& nums) {
+    vector<vector<int>> result;
+    vector<int> current;
+    vector<bool> used(nums.size(), false);
+    function<void()> backtrack = [&]() {
+        if ((int)current.size() == (int)nums.size()) {
+            result.push_back(current);
+            return;
+        }
+        for (int i = 0; i < (int)nums.size(); ++i) {
+            if (used[i]) continue;
+            used[i] = true;
+            current.push_back(nums[i]);
+            backtrack();
+            current.pop_back();
+            used[i] = false;
+        }
+    };
+    backtrack();
+    return result;
+}
 
-        # ── EXPLORE: Recurse with this choice made ────────────────────────────
-        backtrack(state, remaining_choices, result, ...)
+vector<vector<int>> combinationSum(vector<int> candidates, int target) {
+    sort(candidates.begin(), candidates.end());
+    vector<vector<int>> result;
+    vector<int> current;
+    function<void(int, int)> backtrack = [&](int start, int remaining) {
+        if (remaining == 0) {
+            result.push_back(current);
+            return;
+        }
+        for (int i = start; i < (int)candidates.size(); ++i) {
+            if (candidates[i] > remaining) break;
+            current.push_back(candidates[i]);
+            backtrack(i, remaining - candidates[i]);
+            current.pop_back();
+        }
+    };
+    backtrack(0, target);
+    return result;
+}
 
-        # ── UNCHOOSE: Remove the choice (backtrack) ───────────────────────────
-        state.pop()
-        unmark_used(choice)
+vector<vector<string>> solveNQueens(int n) {
+    vector<vector<string>> result;
+    vector<string> board(n, string(n, '.'));
+    unordered_set<int> cols, pos_diag, neg_diag;
 
-
-# ─── SUBSETS ──────────────────────────────────────────────────────────────────
-def subsets(nums):
-    result = []
-
-    def backtrack(start, current):
-        result.append(current[:])      # Every state is a valid subset
-
-        for i in range(start, len(nums)):
-            current.append(nums[i])
-            backtrack(i + 1, current)  # i+1 ensures no repeats
-            current.pop()
-
-    backtrack(0, [])
-    return result
-
-
-# ─── PERMUTATIONS ─────────────────────────────────────────────────────────────
-def permutations(nums):
-    result = []
-    used = [False] * len(nums)
-
-    def backtrack(current):
-        if len(current) == len(nums):
-            result.append(current[:])
-            return
-
-        for i in range(len(nums)):
-            if used[i]:
-                continue
-            used[i] = True
-            current.append(nums[i])
-            backtrack(current)
-            current.pop()
-            used[i] = False
-
-    backtrack([])
-    return result
-
-
-# ─── COMBINATION SUM (reuse allowed) ─────────────────────────────────────────
-def combination_sum(candidates, target):
-    result = []
-    candidates.sort()                  # Sort for early pruning
-
-    def backtrack(start, current, remaining):
-        if remaining == 0:
-            result.append(current[:])
-            return
-
-        for i in range(start, len(candidates)):
-            if candidates[i] > remaining:
-                break                  # PRUNE: rest are too large too (sorted!)
-            current.append(candidates[i])
-            backtrack(i, current, remaining - candidates[i])  # i not i+1: reuse ok
-            current.pop()
-
-    backtrack(0, [], target)
-    return result
-
-
-# ─── N-QUEENS ─────────────────────────────────────────────────────────────────
-def solve_n_queens(n):
-    result = []
-    cols = set()
-    pos_diag = set()   # r + c is constant on positive diagonals
-    neg_diag = set()   # r - c is constant on negative diagonals
-    board = []
-
-    def backtrack(row):
-        if row == n:
-            result.append(["".join(r) for r in board])
-            return
-
-        for col in range(n):
-            if col in cols or (row + col) in pos_diag or (row - col) in neg_diag:
-                continue               # PRUNE: queen conflicts
-
-            # Place queen
-            cols.add(col)
-            pos_diag.add(row + col)
-            neg_diag.add(row - col)
-            board.append(['.' if c != col else 'Q' for c in range(n)])
-
-            backtrack(row + 1)
-
-            # Remove queen
-            cols.remove(col)
-            pos_diag.remove(row + col)
-            neg_diag.remove(row - col)
-            board.pop()
-
-    backtrack(0)
-    return result
+    function<void(int)> backtrack = [&](int row) {
+        if (row == n) {
+            result.push_back(board);
+            return;
+        }
+        for (int col = 0; col < n; ++col) {
+            if (cols.count(col) || pos_diag.count(row + col) || neg_diag.count(row - col)) continue;
+            cols.insert(col);
+            pos_diag.insert(row + col);
+            neg_diag.insert(row - col);
+            board[row][col] = 'Q';
+            backtrack(row + 1);
+            board[row][col] = '.';
+            cols.erase(col);
+            pos_diag.erase(row + col);
+            neg_diag.erase(row - col);
+        }
+    };
+    backtrack(0);
+    return result;
+}
 ```
 
 ---
@@ -716,73 +668,62 @@ Backtracking can't do better than the output size — but **pruning dramatically
 
 ## 📐 Core Template
 
-```python
-# ─── FIBONACCI / CLIMBING STAIRS ──────────────────────────────────────────────
-def climb_stairs(n):
-    if n <= 2: return n
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # dp[i] = number of ways to reach stair i
-    prev2, prev1 = 1, 2
+int climbStairs(int n) {
+    if (n <= 2) return n;
+    int prev2 = 1, prev1 = 2;
+    for (int i = 3; i <= n; ++i) {
+        int curr = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}
 
-    for i in range(3, n + 1):
-        curr = prev1 + prev2           # From stair i-1 (1 step) or i-2 (2 steps)
-        prev2, prev1 = prev1, curr
+int houseRobber(const vector<int>& nums) {
+    if (nums.size() == 1) return nums[0];
+    int prev2 = 0, prev1 = 0;
+    for (int num : nums) {
+        int curr = max(prev1, prev2 + num);
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}
 
-    return prev1                       # Space optimized: only need last 2 values
+bool wordBreak(const string& s, const vector<string>& wordDict) {
+    unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+    int n = s.size();
+    vector<bool> dp(n + 1, false);
+    dp[0] = true;
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (dp[j] && wordSet.count(s.substr(j, i - j))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[n];
+}
 
-
-# ─── HOUSE ROBBER ─────────────────────────────────────────────────────────────
-def house_robber(nums):
-    if len(nums) == 1: return nums[0]
-
-    # dp[i] = max money from houses 0..i
-    # Recurrence: dp[i] = max(dp[i-1], dp[i-2] + nums[i])
-    prev2, prev1 = 0, 0
-
-    for num in nums:
-        curr = max(prev1, prev2 + num)
-        prev2, prev1 = prev1, curr
-
-    return prev1
-
-
-# ─── WORD BREAK ───────────────────────────────────────────────────────────────
-def word_break(s, word_dict):
-    word_set = set(word_dict)
-    n = len(s)
-
-    # dp[i] = True if s[0..i-1] can be segmented
-    dp = [False] * (n + 1)
-    dp[0] = True                       # Empty string is always valid
-
-    for i in range(1, n + 1):
-        for j in range(i):
-            if dp[j] and s[j:i] in word_set:   # s[j..i-1] is a valid word
-                dp[i] = True
-                break
-
-    return dp[n]
-
-
-# ─── DECODE WAYS ──────────────────────────────────────────────────────────────
-def num_decodings(s):
-    n = len(s)
-    if s[0] == '0': return 0
-
-    dp = [0] * (n + 1)
-    dp[0] = 1                          # Empty string: 1 way
-    dp[1] = 1                          # Single char (non-zero): 1 way
-
-    for i in range(2, n + 1):
-        one_digit = int(s[i-1])
-        two_digits = int(s[i-2:i])
-
-        if one_digit != 0:             # s[i-1] alone is valid
-            dp[i] += dp[i-1]
-        if 10 <= two_digits <= 26:     # s[i-2..i-1] together is valid
-            dp[i] += dp[i-2]
-
-    return dp[n]
+int numDecodings(const string& s) {
+    if (s.empty() || s[0] == '0') return 0;
+    int n = s.size();
+    vector<int> dp(n + 1, 0);
+    dp[0] = 1;
+    dp[1] = 1;
+    for (int i = 2; i <= n; ++i) {
+        int one_digit = s[i - 1] - '0';
+        int two_digits = stoi(s.substr(i - 2, 2));
+        if (one_digit != 0) dp[i] += dp[i - 1];
+        if (10 <= two_digits && two_digits <= 26) dp[i] += dp[i - 2];
+    }
+    return dp[n];
+}
 ```
 
 ---
@@ -831,56 +772,48 @@ You're packing a hiking bag with a weight limit. For each item, you face a binar
 
 ## 📐 Core Template
 
-```python
-# ─── 0/1 KNAPSACK ─────────────────────────────────────────────────────────────
-def knapsack_01(weights, values, capacity):
-    n = len(weights)
-    # dp[i][w] = max value using first i items with capacity w
-    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(1, n + 1):
-        w, v = weights[i-1], values[i-1]
-        for cap in range(capacity + 1):
-            # Option 1: Don't take item i
-            dp[i][cap] = dp[i-1][cap]
-            # Option 2: Take item i (if it fits)
-            if cap >= w:
-                dp[i][cap] = max(dp[i][cap], dp[i-1][cap - w] + v)
+int knapsack_01(const vector<int>& weights, const vector<int>& values, int capacity) {
+    int n = weights.size();
+    vector<vector<int>> dp(n + 1, vector<int>(capacity + 1, 0));
+    for (int i = 1; i <= n; ++i) {
+        int w = weights[i - 1], v = values[i - 1];
+        for (int cap = 0; cap <= capacity; ++cap) {
+            dp[i][cap] = dp[i - 1][cap];
+            if (cap >= w) dp[i][cap] = max(dp[i][cap], dp[i - 1][cap - w] + v);
+        }
+    }
+    return dp[n][capacity];
+}
 
-    return dp[n][capacity]
+bool canPartition(const vector<int>& nums) {
+    int total = accumulate(nums.begin(), nums.end(), 0);
+    if (total % 2 != 0) return false;
+    int target = total / 2;
+    vector<bool> dp(target + 1, false);
+    dp[0] = true;
+    for (int num : nums) {
+        for (int j = target; j >= num; --j) {
+            dp[j] = dp[j] || dp[j - num];
+        }
+    }
+    return dp[target];
+}
 
-
-# ─── PARTITION EQUAL SUBSET SUM (0/1 Knapsack as boolean) ────────────────────
-def can_partition(nums):
-    total = sum(nums)
-    if total % 2 != 0:
-        return False
-
-    target = total // 2
-    # dp[j] = can we achieve sum j using a subset of nums?
-    dp = [False] * (target + 1)
-    dp[0] = True                       # Sum 0 is always achievable (empty subset)
-
-    for num in nums:
-        # Iterate BACKWARDS to prevent using same item twice
-        for j in range(target, num - 1, -1):
-            dp[j] = dp[j] or dp[j - num]
-
-    return dp[target]
-
-
-# ─── UNBOUNDED KNAPSACK (Coin Change) ─────────────────────────────────────────
-def coin_change(coins, amount):
-    # dp[i] = minimum coins to make amount i
-    dp = [float('inf')] * (amount + 1)
-    dp[0] = 0                          # 0 coins needed to make 0
-
-    for coin in coins:
-        # Iterate FORWARD: items can be reused
-        for i in range(coin, amount + 1):
-            dp[i] = min(dp[i], dp[i - coin] + 1)
-
-    return dp[amount] if dp[amount] != float('inf') else -1
+int coinChange(const vector<int>& coins, int amount) {
+    const int INF = 1e9;
+    vector<int> dp(amount + 1, INF);
+    dp[0] = 0;
+    for (int coin : coins) {
+        for (int i = coin; i <= amount; ++i) {
+            dp[i] = min(dp[i], dp[i - coin] + 1);
+        }
+    }
+    return dp[amount] == INF ? -1 : dp[amount];
+}
 ```
 
 ---
@@ -935,57 +868,49 @@ When you have two sequences (two strings or a grid with two dimensions), the sub
 
 ## 📐 Core Template
 
-```python
-# ─── LONGEST COMMON SUBSEQUENCE ───────────────────────────────────────────────
-def lcs(text1, text2):
-    m, n = len(text1), len(text2)
-    # dp[i][j] = LCS of text1[0..i-1] and text2[0..j-1]
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if text1[i-1] == text2[j-1]:
-                dp[i][j] = dp[i-1][j-1] + 1      # Characters match: extend LCS
-            else:
-                dp[i][j] = max(dp[i-1][j], dp[i][j-1])  # Take best of skipping one
+int longestCommonSubsequence(const string& text1, const string& text2) {
+    int m = text1.size(), n = text2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (text1[i - 1] == text2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+            else dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
 
-    return dp[m][n]
+int editDistance(const string& word1, const string& word2) {
+    int m = word1.size(), n = word2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 0; i <= m; ++i) dp[i][0] = i;
+    for (int j = 0; j <= n; ++j) dp[0][j] = j;
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (word1[i - 1] == word2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+        }
+    }
+    return dp[m][n];
+}
 
-
-# ─── EDIT DISTANCE ────────────────────────────────────────────────────────────
-def edit_distance(word1, word2):
-    m, n = len(word1), len(word2)
-    # dp[i][j] = min operations to convert word1[0..i-1] to word2[0..j-1]
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
-
-    # Base cases: convert to/from empty string
-    for i in range(m + 1): dp[i][0] = i   # Delete all chars
-    for j in range(n + 1): dp[0][j] = j   # Insert all chars
-
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if word1[i-1] == word2[j-1]:
-                dp[i][j] = dp[i-1][j-1]           # No operation needed
-            else:
-                dp[i][j] = 1 + min(
-                    dp[i-1][j],                    # Delete from word1
-                    dp[i][j-1],                    # Insert into word1
-                    dp[i-1][j-1]                   # Replace
-                )
-
-    return dp[m][n]
-
-
-# ─── UNIQUE PATHS (grid DP) ───────────────────────────────────────────────────
-def unique_paths(m, n):
-    # dp[i][j] = number of ways to reach cell (i, j)
-    dp = [[1] * n for _ in range(m)]   # First row and col = 1 (only one way)
-
-    for i in range(1, m):
-        for j in range(1, n):
-            dp[i][j] = dp[i-1][j] + dp[i][j-1]   # From above + from left
-
-    return dp[m-1][n-1]
+bool isInterleave(const string& s1, const string& s2, const string& s3) {
+    int m = s1.size(), n = s2.size();
+    if (m + n != (int)s3.size()) return false;
+    vector<vector<bool>> dp(m + 1, vector<bool>(n + 1, false));
+    dp[0][0] = true;
+    for (int i = 0; i <= m; ++i) {
+        for (int j = 0; j <= n; ++j) {
+            if (i > 0) dp[i][j] = dp[i][j] || (dp[i - 1][j] && s1[i - 1] == s3[i + j - 1]);
+            if (j > 0) dp[i][j] = dp[i][j] || (dp[i][j - 1] && s2[j - 1] == s3[i + j - 1]);
+        }
+    }
+    return dp[m][n];
+}
 ```
 
 ---
@@ -1029,45 +954,26 @@ Interval DP solves problems where the answer for a range `[i, j]` depends on spl
 
 ## 📐 Core Template
 
-```python
-# ─── INTERVAL DP TEMPLATE ─────────────────────────────────────────────────────
-def interval_dp(arr):
-    n = len(arr)
-    # dp[i][j] = answer for subarray arr[i..j]
-    dp = [[0] * n for _ in range(n)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Fill by increasing interval LENGTH
-    for length in range(2, n + 1):              # Length from 2 to n
-        for i in range(n - length + 1):
-            j = i + length - 1                  # Right endpoint
+int burstBalloons(vector<int> nums) {
+    int n = nums.size();
+    nums.insert(nums.begin(), 1);
+    nums.push_back(1);
+    vector<vector<int>> dp(n + 2, vector<int>(n + 2, 0));
 
-            dp[i][j] = float('inf')             # Or -inf, depending on problem
-
-            for k in range(i, j):               # Try every split point
-                # Combine dp[i][k] and dp[k+1][j]
-                cost = dp[i][k] + dp[k+1][j] + merge_cost(arr, i, j, k)
-                dp[i][j] = min(dp[i][j], cost)
-
-    return dp[0][n-1]
-
-
-# ─── BURST BALLOONS ───────────────────────────────────────────────────────────
-def max_coins(nums):
-    # Add boundary balloons with value 1
-    nums = [1] + nums + [1]
-    n = len(nums)
-    dp = [[0] * n for _ in range(n)]
-
-    # dp[i][j] = max coins from bursting all balloons between i and j (exclusive)
-    for length in range(2, n):
-        for left in range(0, n - length):
-            right = left + length
-            for k in range(left + 1, right):   # k = last balloon to burst in range
-                coins = nums[left] * nums[k] * nums[right]
-                dp[left][right] = max(dp[left][right],
-                                      dp[left][k] + coins + dp[k][right])
-
-    return dp[0][n-1]
+    for (int len = 2; len < n + 2; ++len) {
+        for (int left = 0; left + len < n + 2; ++left) {
+            int right = left + len;
+            for (int last = left + 1; last < right; ++last) {
+                dp[left][right] = max(dp[left][right], dp[left][last] + nums[left] * nums[last] * nums[right] + dp[last][right]);
+            }
+        }
+    }
+    return dp[0][n + 1];
+}
 ```
 
 ---
@@ -1110,56 +1016,52 @@ A monotonic stack maintains elements in sorted order (increasing or decreasing).
 
 ## 📐 Core Template
 
-```python
-# ─── NEXT GREATER ELEMENT (decreasing stack) ─────────────────────────────────
-def next_greater(nums):
-    n = len(nums)
-    result = [-1] * n                  # Default: no greater element exists
-    stack = []                         # Stack of indices, values decrease bottom→top
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(n):
-        # Current element is GREATER than stack top → it's the answer for top
-        while stack and nums[i] > nums[stack[-1]]:
-            idx = stack.pop()
-            result[idx] = nums[i]      # nums[i] is next greater for nums[idx]
-        stack.append(i)
+vector<int> nextGreaterElement(const vector<int>& nums) {
+    vector<int> result(nums.size(), -1);
+    stack<int> st;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        while (!st.empty() && nums[i] > nums[st.top()]) {
+            result[st.top()] = nums[i];
+            st.pop();
+        }
+        st.push(i);
+    }
+    return result;
+}
 
-    return result
+vector<int> dailyTemperatures(const vector<int>& temperatures) {
+    vector<int> result(temperatures.size(), 0);
+    stack<int> st;
+    for (int i = 0; i < (int)temperatures.size(); ++i) {
+        while (!st.empty() && temperatures[i] > temperatures[st.top()]) {
+            int idx = st.top(); st.pop();
+            result[idx] = i - idx;
+        }
+        st.push(i);
+    }
+    return result;
+}
 
-# Monotonic INCREASING stack → finds next SMALLER element
-# Monotonic DECREASING stack → finds next GREATER element
-
-
-# ─── LARGEST RECTANGLE IN HISTOGRAM ──────────────────────────────────────────
-def largest_rectangle(heights):
-    stack = []                         # Monotonic increasing stack of indices
-    max_area = 0
-    heights = heights + [0]            # Sentinel 0 flushes all remaining bars
-
-    for i, h in enumerate(heights):
-        while stack and heights[stack[-1]] > h:
-            height = heights[stack.pop()]
-            # Width: from current position back to previous smaller bar
-            width = i if not stack else i - stack[-1] - 1
-            max_area = max(max_area, height * width)
-        stack.append(i)
-
-    return max_area
-
-
-# ─── DAILY TEMPERATURES ───────────────────────────────────────────────────────
-def daily_temperatures(temps):
-    n = len(temps)
-    result = [0] * n
-    stack = []                         # Stack of indices
-
-    for i in range(n):
-        while stack and temps[i] > temps[stack[-1]]:
-            idx = stack.pop()
-            result[idx] = i - idx      # Days until warmer = index difference
-        stack.append(i)
-
-    return result
+int largestRectangleArea(const vector<int>& heights) {
+    vector<int> h = heights;
+    h.push_back(0);
+    stack<int> st;
+    int best = 0;
+    for (int i = 0; i < (int)h.size(); ++i) {
+        while (!st.empty() && h[i] < h[st.top()]) {
+            int height = h[st.top()];
+            st.pop();
+            int left = st.empty() ? -1 : st.top();
+            best = max(best, height * (i - left - 1));
+        }
+        st.push(i);
+    }
+    return best;
+}
 ```
 
 ---
@@ -1215,29 +1117,21 @@ A regular sliding window tracks content with a hash map. But if you need the *ma
 
 ## 📐 Core Template
 
-```python
-from collections import deque
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-def sliding_window_maximum(nums, k):
-    dq = deque()                       # Stores INDICES, values monotonically decreasing
-    result = []
-
-    for i, num in enumerate(nums):
-        # Remove elements outside the window from the FRONT
-        while dq and dq[0] < i - k + 1:
-            dq.popleft()
-
-        # Remove smaller elements from the BACK (they can never be max)
-        while dq and nums[dq[-1]] < num:
-            dq.pop()
-
-        dq.append(i)
-
-        # Window is fully formed after the first k elements
-        if i >= k - 1:
-            result.append(nums[dq[0]])  # Front is always the current maximum
-
-    return result
+vector<int> maxSlidingWindow(const vector<int>& nums, int k) {
+    deque<int> dq;
+    vector<int> result;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        while (!dq.empty() && dq.front() <= i - k) dq.pop_front();
+        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if (i >= k - 1) result.push_back(nums[dq.front()]);
+    }
+    return result;
+}
 ```
 
 ---

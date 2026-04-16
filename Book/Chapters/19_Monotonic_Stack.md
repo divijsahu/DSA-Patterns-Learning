@@ -23,56 +23,52 @@ A monotonic stack maintains elements in sorted order (increasing or decreasing).
 
 ## 📐 Core Template
 
-```python
-# ─── NEXT GREATER ELEMENT (decreasing stack) ─────────────────────────────────
-def next_greater(nums):
-    n = len(nums)
-    result = [-1] * n                  # Default: no greater element exists
-    stack = []                         # Stack of indices, values decrease bottom→top
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(n):
-        # Current element is GREATER than stack top → it's the answer for top
-        while stack and nums[i] > nums[stack[-1]]:
-            idx = stack.pop()
-            result[idx] = nums[i]      # nums[i] is next greater for nums[idx]
-        stack.append(i)
+vector<int> nextGreaterElement(const vector<int>& nums) {
+    vector<int> result(nums.size(), -1);
+    stack<int> st;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        while (!st.empty() && nums[i] > nums[st.top()]) {
+            result[st.top()] = nums[i];
+            st.pop();
+        }
+        st.push(i);
+    }
+    return result;
+}
 
-    return result
+vector<int> dailyTemperatures(const vector<int>& temperatures) {
+    vector<int> result(temperatures.size(), 0);
+    stack<int> st;
+    for (int i = 0; i < (int)temperatures.size(); ++i) {
+        while (!st.empty() && temperatures[i] > temperatures[st.top()]) {
+            int idx = st.top(); st.pop();
+            result[idx] = i - idx;
+        }
+        st.push(i);
+    }
+    return result;
+}
 
-# Monotonic INCREASING stack → finds next SMALLER element
-# Monotonic DECREASING stack → finds next GREATER element
-
-
-# ─── LARGEST RECTANGLE IN HISTOGRAM ──────────────────────────────────────────
-def largest_rectangle(heights):
-    stack = []                         # Monotonic increasing stack of indices
-    max_area = 0
-    heights = heights + [0]            # Sentinel 0 flushes all remaining bars
-
-    for i, h in enumerate(heights):
-        while stack and heights[stack[-1]] > h:
-            height = heights[stack.pop()]
-            # Width: from current position back to previous smaller bar
-            width = i if not stack else i - stack[-1] - 1
-            max_area = max(max_area, height * width)
-        stack.append(i)
-
-    return max_area
-
-
-# ─── DAILY TEMPERATURES ───────────────────────────────────────────────────────
-def daily_temperatures(temps):
-    n = len(temps)
-    result = [0] * n
-    stack = []                         # Stack of indices
-
-    for i in range(n):
-        while stack and temps[i] > temps[stack[-1]]:
-            idx = stack.pop()
-            result[idx] = i - idx      # Days until warmer = index difference
-        stack.append(i)
-
-    return result
+int largestRectangleArea(const vector<int>& heights) {
+    vector<int> h = heights;
+    h.push_back(0);
+    stack<int> st;
+    int best = 0;
+    for (int i = 0; i < (int)h.size(); ++i) {
+        while (!st.empty() && h[i] < h[st.top()]) {
+            int height = h[st.top()];
+            st.pop();
+            int left = st.empty() ? -1 : st.top();
+            best = max(best, height * (i - left - 1));
+        }
+        st.push(i);
+    }
+    return best;
+}
 ```
 
 ---

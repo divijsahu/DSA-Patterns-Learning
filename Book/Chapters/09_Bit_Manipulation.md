@@ -23,43 +23,27 @@ Bits are nature's toggle switches — a 0 or a 1. XOR is the magician of bit ope
 
 ## 📐 Core Bit Operations
 
-```python
-# ─── ESSENTIAL BIT TRICKS ────────────────────────────────────────────────────
-x & (x - 1)      # Clears the lowest set bit of x (used to count bits)
-x & (-x)         # Isolates the lowest set bit of x
-x ^ x            # Always 0 (cancellation)
-x ^ 0            # Always x (identity)
-x >> 1           # Divide by 2
-x << 1           # Multiply by 2
-x & 1            # Check if x is odd (last bit)
-~x               # Bitwise NOT
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── SINGLE NUMBER (XOR cancellation) ────────────────────────────────────────
-def single_number(nums):
-    result = 0
-    for num in nums:
-        result ^= num              # All duplicates cancel, unique remains
-    return result
+int singleNumber(const vector<int>& nums) {
+    int x = 0;
+    for (int num : nums) x ^= num;
+    return x;
+}
 
-# ─── COUNT SET BITS (Hamming Weight) ─────────────────────────────────────────
-def count_bits(n):
-    count = 0
-    while n:
-        n &= n - 1                 # Each iteration removes one set bit
-        count += 1
-    return count
+bool isPowerOfTwo(int n) {
+    return n > 0 && (n & (n - 1)) == 0;
+}
 
-# ─── POWER OF TWO CHECK ───────────────────────────────────────────────────────
-def is_power_of_two(n):
-    return n > 0 and (n & (n - 1)) == 0   # Powers of 2 have exactly one set bit
-
-# ─── MISSING NUMBER ───────────────────────────────────────────────────────────
-def missing_number(nums):
-    n = len(nums)
-    result = n                     # Start with n
-    for i, num in enumerate(nums):
-        result ^= i ^ num          # XOR with both index and value
-    return result                  # Remaining = missing number
+vector<int> countBits(int n) {
+    vector<int> dp(n + 1, 0);
+    for (int i = 1; i <= n; ++i) {
+        dp[i] = dp[i >> 1] + (i & 1);
+    }
+    return dp;
+}
 ```
 
 ---

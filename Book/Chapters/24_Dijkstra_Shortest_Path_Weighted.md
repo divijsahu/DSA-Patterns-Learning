@@ -27,59 +27,59 @@ Dijkstra is BFS with a twist: instead of a queue (FIFO), use a min-heap (priorit
 
 ## 📐 Core Template
 
-```python
-import heapq
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-def dijkstra(graph, start, n):
-    # graph[u] = [(v, weight), ...]
-    dist = [float('inf')] * n
-    dist[start] = 0
-    heap = [(0, start)]               # (distance, node)
+vector<long long> dijkstra(const vector<vector<pair<int, int>>>& graph, int start, int n) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    dist[start] = 0;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> heap;
+    heap.push({0, start});
 
-    while heap:
-        d, node = heapq.heappop(heap)
+    while (!heap.empty()) {
+        auto [d, node] = heap.top(); heap.pop();
+        if (d > dist[node]) continue;
+        for (auto [neighbor, weight] : graph[node]) {
+            long long nd = d + weight;
+            if (nd < dist[neighbor]) {
+                dist[neighbor] = nd;
+                heap.push({nd, neighbor});
+            }
+        }
+    }
 
-        if d > dist[node]:            # Stale entry (already found shorter path)
-            continue
+    return dist;
+}
 
-        for neighbor, weight in graph[node]:
-            new_dist = dist[node] + weight
+pair<vector<int>, long long> dijkstra_with_path(const vector<vector<pair<int, int>>>& graph, int start, int end, int n) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    vector<int> prev(n, -1);
+    dist[start] = 0;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> heap;
+    heap.push({0, start});
 
-            if new_dist < dist[neighbor]:
-                dist[neighbor] = new_dist
-                heapq.heappush(heap, (new_dist, neighbor))
+    while (!heap.empty()) {
+        auto [d, node] = heap.top(); heap.pop();
+        if (d > dist[node]) continue;
+        if (node == end) break;
+        for (auto [neighbor, weight] : graph[node]) {
+            long long nd = d + weight;
+            if (nd < dist[neighbor]) {
+                dist[neighbor] = nd;
+                prev[neighbor] = node;
+                heap.push({nd, neighbor});
+            }
+        }
+    }
 
-    return dist
-
-
-# ─── DIJKSTRA WITH PATH RECONSTRUCTION ───────────────────────────────────────
-def dijkstra_with_path(graph, start, end, n):
-    dist = [float('inf')] * n
-    prev = [-1] * n
-    dist[start] = 0
-    heap = [(0, start)]
-
-    while heap:
-        d, node = heapq.heappop(heap)
-        if d > dist[node]: continue
-
-        if node == end:
-            break                     # Early exit when target is settled
-
-        for neighbor, weight in graph[node]:
-            new_dist = dist[node] + weight
-            if new_dist < dist[neighbor]:
-                dist[neighbor] = new_dist
-                prev[neighbor] = node
-                heapq.heappush(heap, (new_dist, neighbor))
-
-    # Reconstruct path
-    path = []
-    curr = end
-    while curr != -1:
-        path.append(curr)
-        curr = prev[curr]
-    return path[::-1], dist[end]
+    vector<int> path;
+    for (int cur = end; cur != -1; cur = prev[cur]) path.push_back(cur);
+    reverse(path.begin(), path.end());
+    return {path, dist[end]};
+}
 ```
 
 ---

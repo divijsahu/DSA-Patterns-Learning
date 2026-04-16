@@ -27,62 +27,62 @@ Each node starts as its own group leader. When you `union(A, B)`, you make one g
 
 ## 📐 Core Template
 
-```python
-class UnionFind:
-    def __init__(self, n):
-        self.parent = list(range(n))   # Initially, each node is its own parent
-        self.rank = [0] * n            # Tree height (for union by rank)
-        self.components = n            # Number of separate groups
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    def find(self, x):
-        # Path compression: make x point directly to root
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])   # Recursive compression
-        return self.parent[x]
+class UnionFind {
+public:
+    vector<int> parent;
+    vector<int> rank;
+    int components;
 
-    def union(self, x, y):
-        px, py = self.find(x), self.find(y)
+    UnionFind(int n) : parent(n), rank(n, 0), components(n) {
+        iota(parent.begin(), parent.end(), 0);
+    }
 
-        if px == py:
-            return False               # Already in the same group (edge is redundant!)
+    int find(int x) {
+        if (parent[x] != x) parent[x] = find(parent[x]);
+        return parent[x];
+    }
 
-        # Union by rank: attach smaller tree to larger
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px            # px should be the larger tree
+    bool unite(int x, int y) {
+        int px = find(x), py = find(y);
+        if (px == py) return false;
+        if (rank[px] < rank[py]) swap(px, py);
+        parent[py] = px;
+        if (rank[px] == rank[py]) ++rank[px];
+        --components;
+        return true;
+    }
 
-        self.parent[py] = px           # Attach py's tree under px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
+};
 
-        self.components -= 1
-        return True                    # Successfully merged two groups
+int num_islands(vector<vector<char>>& grid) {
+    if (grid.empty()) return 0;
+    int rows = grid.size(), cols = grid[0].size();
+    UnionFind uf(rows * cols);
+    int islands = 0;
+    auto id = [&](int r, int c) { return r * cols + c; };
 
-    def connected(self, x, y):
-        return self.find(x) == self.find(y)
-
-    def count(self):
-        return self.components
-
-
-# ─── USAGE EXAMPLE: Number of Islands ────────────────────────────────────────
-def num_islands(grid):
-    if not grid: return 0
-
-    rows, cols = len(grid), len(grid[0])
-    uf = UnionFind(rows * cols)
-    islands = 0
-
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == '1':
-                islands += 1
-                for dr, dc in [(0,1),(1,0)]:   # Only check right and down
-                    nr, nc = r + dr, c + dc
-                    if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == '1':
-                        if uf.union(r * cols + c, nr * cols + nc):
-                            islands -= 1        # Two islands became one
-
-    return islands
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (grid[r][c] == '1') {
+                ++islands;
+                for (auto [dr, dc] : vector<pair<int, int>>{{0, 1}, {1, 0}}) {
+                    int nr = r + dr, nc = c + dc;
+                    if (0 <= nr && nr < rows && 0 <= nc && nc < cols && grid[nr][nc] == '1') {
+                        if (uf.unite(id(r, c), id(nr, nc))) --islands;
+                    }
+                }
+            }
+        }
+    }
+    return islands;
+}
 ```
 
 ---

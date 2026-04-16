@@ -33,100 +33,107 @@ A heap is a special tree that always keeps the minimum (or maximum) at the root.
 
 ## 📐 Core Template
 
-```python
-import heapq
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── TOP K LARGEST (min-heap of size K) ───────────────────────────────────────
-def top_k_largest(nums, k):
-    heap = []
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-    for num in nums:
-        heapq.heappush(heap, num)
-        if len(heap) > k:
-            heapq.heappop(heap)        # Remove smallest — only K largest remain
+vector<int> top_k_largest(const vector<int>& nums, int k) {
+    priority_queue<int, vector<int>, greater<int>> heap;
+    for (int num : nums) {
+        heap.push(num);
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<int> result;
+    while (!heap.empty()) {
+        result.push_back(heap.top());
+        heap.pop();
+    }
+    return result;
+}
 
-    return list(heap)                  # heap[0] is the Kth largest
+vector<int> top_k_frequent(const vector<int>& nums, int k) {
+    unordered_map<int, int> freq;
+    for (int num : nums) freq[num]++;
+    using Item = pair<int, int>;
+    priority_queue<Item, vector<Item>, greater<Item>> heap;
+    for (auto& [num, count] : freq) {
+        heap.push({count, num});
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<int> result;
+    while (!heap.empty()) {
+        result.push_back(heap.top().second);
+        heap.pop();
+    }
+    return result;
+}
 
-# Python's heapq is a MIN-HEAP. To simulate MAX-HEAP: negate all values.
-# heapq.heappush(heap, -num)
-# -heapq.heappop(heap)
+vector<vector<int>> k_closest(const vector<vector<int>>& points, int k) {
+    priority_queue<tuple<int, int, int>> heap;
+    for (const auto& p : points) {
+        int x = p[0], y = p[1];
+        int dist = -(x * x + y * y);
+        heap.push({dist, x, y});
+        if ((int)heap.size() > k) heap.pop();
+    }
+    vector<vector<int>> result;
+    while (!heap.empty()) {
+        auto [dist, x, y] = heap.top();
+        heap.pop();
+        result.push_back({x, y});
+    }
+    return result;
+}
 
+class MedianFinder {
+public:
+    priority_queue<int> small;
+    priority_queue<int, vector<int>, greater<int>> large;
 
-# ─── K MOST FREQUENT ELEMENTS ─────────────────────────────────────────────────
-def top_k_frequent(nums, k):
-    from collections import Counter
-    freq = Counter(nums)               # {element: frequency}
+    void add_num(int num) {
+        small.push(num);
+        if (!large.empty() && small.top() > large.top()) {
+            large.push(small.top());
+            small.pop();
+        }
+        if ((int)small.size() > (int)large.size() + 1) {
+            large.push(small.top());
+            small.pop();
+        } else if ((int)large.size() > (int)small.size()) {
+            small.push(large.top());
+            large.pop();
+        }
+    }
 
-    # Min-heap keyed by frequency — keeps only K highest-frequency elements
-    heap = []
-    for num, count in freq.items():
-        heapq.heappush(heap, (count, num))
-        if len(heap) > k:
-            heapq.heappop(heap)
+    double find_median() {
+        if (small.size() > large.size()) return small.top();
+        return (small.top() + large.top()) / 2.0;
+    }
+};
 
-    return [num for count, num in heap]
-
-
-# ─── K CLOSEST POINTS TO ORIGIN ───────────────────────────────────────────────
-def k_closest(points, k):
-    # Max-heap of size K (negate distance)
-    heap = []
-    for x, y in points:
-        dist = -(x*x + y*y)           # Negate = max-heap simulation
-        heapq.heappush(heap, (dist, x, y))
-        if len(heap) > k:
-            heapq.heappop(heap)
-
-    return [[x, y] for (_, x, y) in heap]
-
-
-# ─── FIND MEDIAN FROM DATA STREAM ────────────────────────────────────────────
-class MedianFinder:
-    def __init__(self):
-        self.small = []                # Max-heap (lower half) — negate values
-        self.large = []                # Min-heap (upper half)
-
-    def add_num(self, num):
-        # Always push to small first
-        heapq.heappush(self.small, -num)
-
-        # Balance: largest of small ≤ smallest of large
-        if self.small and self.large and -self.small[0] > self.large[0]:
-            val = -heapq.heappop(self.small)
-            heapq.heappush(self.large, val)
-
-        # Balance sizes: small can have at most one more than large
-        if len(self.small) > len(self.large) + 1:
-            val = -heapq.heappop(self.small)
-            heapq.heappush(self.large, val)
-        elif len(self.large) > len(self.small):
-            val = heapq.heappop(self.large)
-            heapq.heappush(self.small, -val)
-
-    def find_median(self):
-        if len(self.small) > len(self.large):
-            return -self.small[0]
-        return (-self.small[0] + self.large[0]) / 2.0
-
-
-# ─── MERGE K SORTED LISTS ─────────────────────────────────────────────────────
-def merge_k_sorted(lists):
-    heap = []
-    dummy = ListNode(0)
-    curr = dummy
-
-    for i, node in enumerate(lists):
-        if node:
-            heapq.heappush(heap, (node.val, i, node))
-
-    while heap:
-        val, i, node = heapq.heappop(heap)
-        curr.next = node
-        curr = curr.next
-        if node.next:
-            heapq.heappush(heap, (node.next.val, i, node.next))
-
-    return dummy.next
+ListNode* merge_k_sorted(const vector<ListNode*>& lists) {
+    using Item = tuple<int, int, ListNode*>;
+    priority_queue<Item, vector<Item>, greater<Item>> heap;
+    for (int i = 0; i < (int)lists.size(); ++i) {
+        if (lists[i]) heap.push({lists[i]->val, i, lists[i]});
+    }
+    ListNode dummy(0);
+    ListNode* curr = &dummy;
+    while (!heap.empty()) {
+        auto [val, i, node] = heap.top();
+        heap.pop();
+        curr->next = node;
+        curr = curr->next;
+        if (node->next) heap.push({node->next->val, i, node->next});
+    }
+    return dummy.next;
+}
 ```
 
 ---

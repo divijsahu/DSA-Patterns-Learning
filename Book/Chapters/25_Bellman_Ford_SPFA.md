@@ -22,41 +22,51 @@ Bellman-Ford works by "relaxing" all edges repeatedly — V-1 times total (where
 
 ## 📐 Core Template
 
-```python
-def bellman_ford(n, edges, start):
-    # edges = [(u, v, weight), ...]
-    dist = [float('inf')] * n
-    dist[start] = 0
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Relax all edges V-1 times
-    for _ in range(n - 1):
-        for u, v, w in edges:
-            if dist[u] != float('inf') and dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
+struct Edge {
+    int u, v, w;
+};
 
-    # Check for negative cycles: if we can still relax, cycle exists
-    for u, v, w in edges:
-        if dist[u] != float('inf') and dist[u] + w < dist[v]:
-            return None              # Negative cycle detected
+vector<long long> bellman_ford(int n, const vector<Edge>& edges, int start) {
+    const long long INF = 4e18;
+    vector<long long> dist(n, INF);
+    dist[start] = 0;
 
-    return dist
+    for (int i = 0; i < n - 1; ++i) {
+        bool changed = false;
+        for (const auto& edge : edges) {
+            if (dist[edge.u] != INF && dist[edge.u] + edge.w < dist[edge.v]) {
+                dist[edge.v] = dist[edge.u] + edge.w;
+                changed = true;
+            }
+        }
+        if (!changed) break;
+    }
 
+    return dist;
+}
 
-# ─── K STOPS VARIANT (for "Cheapest Flights Within K Stops") ─────────────────
-def find_cheapest_price(n, flights, src, dst, k):
-    prices = [float('inf')] * n
-    prices[src] = 0
+int find_cheapest_price(int n, const vector<vector<int>>& flights, int src, int dst, int k) {
+    const int INF = 1e9;
+    vector<int> prices(n, INF);
+    prices[src] = 0;
 
-    for i in range(k + 1):           # Relax exactly k+1 times (k stops = k+1 edges)
-        temp = prices[:]             # Work on a COPY to not use current-round updates
+    for (int i = 0; i <= k; ++i) {
+        vector<int> next = prices;
+        for (const auto& flight : flights) {
+            int u = flight[0], v = flight[1], w = flight[2];
+            if (prices[u] != INF && prices[u] + w < next[v]) {
+                next[v] = prices[u] + w;
+            }
+        }
+        prices.swap(next);
+    }
 
-        for u, v, w in flights:
-            if prices[u] != float('inf') and prices[u] + w < temp[v]:
-                temp[v] = prices[u] + w
-
-        prices = temp
-
-    return prices[dst] if prices[dst] != float('inf') else -1
+    return prices[dst] == INF ? -1 : prices[dst];
+}
 ```
 
 ---

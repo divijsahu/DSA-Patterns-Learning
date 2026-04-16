@@ -43,75 +43,31 @@ If all 4 hold → Binary Search on Answer, giving O(n log n) total.
 
 ## 📐 Core Template
 
-```python
-# ─── BINARY SEARCH ON ANSWER (find minimum valid) ────────────────────────────
-def binary_search_answer(arr, constraint):
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Step 1: Define the search space
-    left = min_possible_answer          # E.g., 1, min(arr), or 0
-    right = max_possible_answer         # E.g., sum(arr), max(arr)
+template <typename Feasible>
+int binary_search_answer(int lo, int hi, Feasible feasible) {
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (feasible(mid)) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
 
-    # Step 2: Binary search the boundary
-    while left < right:                 # NOT <=, we want the boundary
-        mid = left + (right - left) // 2
-
-        if is_feasible(arr, mid, constraint):
-            right = mid                 # Valid! Try to find something smaller
-        else:
-            left = mid + 1              # Invalid, need to go bigger
-
-    return left                         # left == right == the minimum valid answer
-
-
-# ─── EXAMPLE: KOKO EATING BANANAS ────────────────────────────────────────────
-def min_eating_speed(piles, h):
-    import math
-
-    def can_finish(speed):
-        # Can Koko finish all piles at this speed in h hours?
-        hours_needed = sum(math.ceil(pile / speed) for pile in piles)
-        return hours_needed <= h
-
-    left, right = 1, max(piles)         # Speed between 1 and max pile size
-
-    while left < right:
-        mid = left + (right - left) // 2
-        if can_finish(mid):
-            right = mid                 # Try slower
-        else:
-            left = mid + 1             # Need to go faster
-
-    return left
-
-
-# ─── EXAMPLE: SPLIT ARRAY LARGEST SUM ────────────────────────────────────────
-def split_array(nums, k):
-
-    def is_feasible(max_sum):
-        # Can we split nums into k parts where each part sum ≤ max_sum?
-        parts = 1
-        current_sum = 0
-        for num in nums:
-            if current_sum + num > max_sum:
-                parts += 1             # Start new partition
-                current_sum = num
-                if parts > k:
-                    return False
-            else:
-                current_sum += num
-        return True
-
-    left = max(nums)                    # At minimum, max single element
-    right = sum(nums)                   # At maximum, entire array in one part
-
-    while left < right:
-        mid = left + (right - left) // 2
-        if is_feasible(mid):
-            right = mid
-        else:
-            left = mid + 1
-
-    return left
+int minEatingSpeed(const vector<int>& piles, int h) {
+    int hi = *max_element(piles.begin(), piles.end());
+    auto feasible = [&](int speed) {
+        long long hours = 0;
+        for (int pile : piles) {
+            hours += (pile + speed - 1) / speed;
+        }
+        return hours <= h;
+    };
+    return binary_search_answer(1, hi, feasible);
+}
 ```
 
 ---

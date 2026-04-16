@@ -23,83 +23,55 @@ Sort the intervals by start time, then walk through them with a pointer to the l
 
 ## 📐 Core Template
 
-```python
-# ─── MERGE OVERLAPPING INTERVALS ──────────────────────────────────────────────
-def merge(intervals):
-    if not intervals:
-        return []
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    intervals.sort(key=lambda x: x[0])   # Sort by START time
-    merged = [intervals[0]]
+vector<vector<int>> merge_intervals(vector<vector<int>> intervals) {
+    if (intervals.empty()) return {};
+    sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+        return a[0] < b[0];
+    });
+    vector<vector<int>> merged{intervals[0]};
+    for (int i = 1; i < (int)intervals.size(); ++i) {
+        auto& last = merged.back();
+        if (intervals[i][0] <= last[1]) last[1] = max(last[1], intervals[i][1]);
+        else merged.push_back(intervals[i]);
+    }
+    return merged;
+}
 
-    for start, end in intervals[1:]:
-        if start <= merged[-1][1]:        # Overlaps with the last merged interval
-            merged[-1][1] = max(merged[-1][1], end)   # Extend the end
-        else:
-            merged.append([start, end])   # No overlap: commit new interval
+vector<vector<int>> insert_interval(vector<vector<int>> intervals, vector<int> new_interval) {
+    vector<vector<int>> result;
+    int i = 0, n = intervals.size();
+    while (i < n && intervals[i][1] < new_interval[0]) result.push_back(intervals[i++]);
+    while (i < n && intervals[i][0] <= new_interval[1]) {
+        new_interval[0] = min(new_interval[0], intervals[i][0]);
+        new_interval[1] = max(new_interval[1], intervals[i][1]);
+        ++i;
+    }
+    result.push_back(new_interval);
+    while (i < n) result.push_back(intervals[i++]);
+    return result;
+}
 
-    return merged
-
-
-# ─── INSERT INTERVAL ──────────────────────────────────────────────────────────
-def insert(intervals, new_interval):
-    result = []
-    i = 0
-    n = len(intervals)
-
-    # Add all intervals that END before new_interval starts
-    while i < n and intervals[i][1] < new_interval[0]:
-        result.append(intervals[i])
-        i += 1
-
-    # Merge all overlapping intervals
-    while i < n and intervals[i][0] <= new_interval[1]:
-        new_interval[0] = min(new_interval[0], intervals[i][0])
-        new_interval[1] = max(new_interval[1], intervals[i][1])
-        i += 1
-
-    result.append(new_interval)
-
-    # Add remaining intervals
-    while i < n:
-        result.append(intervals[i])
-        i += 1
-
-    return result
-
-
-# ─── MINIMUM MEETING ROOMS (event sweep) ─────────────────────────────────────
-def min_meeting_rooms(intervals):
-    # Sweep line: +1 at start, -1 at end
-    events = []
-    for start, end in intervals:
-        events.append((start, 1))         # Room needed
-        events.append((end, -1))          # Room freed
-
-    events.sort(key=lambda x: (x[0], x[1]))   # Sort by time; ends before starts at same time
-
-    rooms = max_rooms = 0
-    for time, delta in events:
-        rooms += delta
-        max_rooms = max(max_rooms, rooms)
-
-    return max_rooms
-
-
-# ─── MINIMUM ROOMS (heap approach) ───────────────────────────────────────────
-def min_meeting_rooms_heap(intervals):
-    if not intervals: return 0
-
-    intervals.sort(key=lambda x: x[0])
-    heap = []                             # Stores end times of active meetings
-
-    for start, end in intervals:
-        if heap and heap[0] <= start:
-            heapq.heapreplace(heap, end)  # Reuse the room that ended earliest
-        else:
-            heapq.heappush(heap, end)     # Need a new room
-
-    return len(heap)
+int min_meeting_rooms(const vector<vector<int>>& intervals) {
+    vector<pair<int, int>> events;
+    for (const auto& interval : intervals) {
+        events.push_back({interval[0], 1});
+        events.push_back({interval[1], -1});
+    }
+    sort(events.begin(), events.end(), [](const auto& a, const auto& b) {
+        if (a.first != b.first) return a.first < b.first;
+        return a.second < b.second;
+    });
+    int rooms = 0, best = 0;
+    for (const auto& [time, delta] : events) {
+        rooms += delta;
+        best = max(best, rooms);
+    }
+    return best;
+}
 ```
 
 ---

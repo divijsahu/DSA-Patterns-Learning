@@ -220,41 +220,40 @@ Ask yourself these before coding:
 
 ## 📐 Core Template
 
-```python
-# ─── BUILD THE PREFIX SUM ARRAY ───────────────────────────────────────────────
-def build_prefix(nums):
-    n = len(nums)
-    prefix = [0] * (n + 1)          # prefix[0] = 0 acts as a sentinel
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(n):
-        prefix[i + 1] = prefix[i] + nums[i]
+vector<int> build_prefix(const vector<int>& nums) {
+    int n = nums.size();
+    vector<int> prefix(n + 1, 0);
+    for (int i = 0; i < n; ++i) {
+        prefix[i + 1] = prefix[i] + nums[i];
+    }
+    return prefix;
+}
 
-    return prefix
+int range_sum(const vector<int>& prefix, int left, int right) {
+    return prefix[right + 1] - prefix[left];
+}
 
-# ─── RANGE SUM QUERY ──────────────────────────────────────────────────────────
-def range_sum(prefix, left, right):
-    # Sum of nums[left..right] inclusive
-    return prefix[right + 1] - prefix[left]
+int subarray_sum_equals_k(const vector<int>& nums, int k) {
+    unordered_map<int, int> seen;
+    seen[0] = 1;
+    int running_sum = 0;
+    int count = 0;
 
+    for (int num : nums) {
+        running_sum += num;
+        auto it = seen.find(running_sum - k);
+        if (it != seen.end()) {
+            count += it->second;
+        }
+        seen[running_sum] += 1;
+    }
 
-# ─── COUNT SUBARRAYS WITH SUM = K  (the powerful variant) ────────────────────
-def subarray_sum_equals_k(nums, k):
-    count = 0
-    running_sum = 0
-    seen = {0: 1}        # {prefix_sum: frequency} — seed with 0 so we catch
-                         # subarrays starting from index 0
-
-    for num in nums:
-        running_sum += num
-
-        # If (running_sum - k) was seen before, the subarray between
-        # that earlier index and now has sum = k
-        if (running_sum - k) in seen:
-            count += seen[running_sum - k]
-
-        seen[running_sum] = seen.get(running_sum, 0) + 1
-
-    return count
+    return count;
+}
 ```
 
 ---
@@ -339,46 +338,47 @@ A hash map is a **memory palace** — you trade space for instant lookup. Instea
 
 ## 📐 Core Template
 
-```python
-from collections import defaultdict, Counter
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── TWO SUM PATTERN (find complement) ───────────────────────────────────────
-def two_sum(nums, target):
-    seen = {}                          # {value: index}
+vector<int> two_sum(const vector<int>& nums, int target) {
+    unordered_map<int, int> seen;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        int complement = target - nums[i];
+        auto it = seen.find(complement);
+        if (it != seen.end()) {
+            return {it->second, i};
+        }
+        seen[nums[i]] = i;
+    }
+    return {};
+}
 
-    for i, num in enumerate(nums):
-        complement = target - num
+bool is_anagram(const string& s, const string& t) {
+    if (s.size() != t.size()) return false;
+    unordered_map<char, int> freq;
+    for (char c : s) freq[c]++;
+    for (char c : t) {
+        auto it = freq.find(c);
+        if (it == freq.end()) return false;
+        if (--it->second < 0) return false;
+    }
+    return true;
+}
 
-        if complement in seen:
-            return [seen[complement], i]
+vector<vector<string>> group_anagrams(const vector<string>& strs) {
+    unordered_map<string, vector<string>> groups;
+    for (string word : strs) {
+        string key = word;
+        sort(key.begin(), key.end());
+        groups[key].push_back(word);
+    }
 
-        seen[num] = i                  # Store AFTER checking (avoid using same index)
-
-    return []
-
-# ─── FREQUENCY COUNT PATTERN ─────────────────────────────────────────────────
-def is_anagram(s, t):
-    if len(s) != len(t):
-        return False
-
-    freq = Counter(s)                  # {char: count}
-
-    for char in t:
-        freq[char] -= 1
-        if freq[char] < 0:
-            return False
-
-    return True
-
-# ─── GROUPING PATTERN ────────────────────────────────────────────────────────
-def group_anagrams(strs):
-    groups = defaultdict(list)         # {sorted_word: [original_words]}
-
-    for word in strs:
-        key = tuple(sorted(word))      # Canonical form of an anagram group
-        groups[key].append(word)
-
-    return list(groups.values())
+    vector<vector<string>> result;
+    for (auto& entry : groups) result.push_back(move(entry.second));
+    return result;
+}
 ```
 
 ---
@@ -466,65 +466,57 @@ Picture two people walking toward each other on a number line. The left person r
 
 ## 📐 Core Template
 
-```python
-# ─── VARIANT 1: CONVERGING (find pair with target sum) ───────────────────────
-def two_sum_sorted(arr, target):
-    left, right = 0, len(arr) - 1
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while left < right:
-        current = arr[left] + arr[right]
+vector<int> two_sum_sorted(const vector<int>& arr, int target) {
+    int left = 0, right = (int)arr.size() - 1;
+    while (left < right) {
+        int current = arr[left] + arr[right];
+        if (current == target) return {left, right};
+        if (current < target) ++left;
+        else --right;
+    }
+    return {};
+}
 
-        if current == target:
-            return [left, right]
-        elif current < target:
-            left += 1          # Sum too small → move left pointer right
-        else:
-            right -= 1         # Sum too big → move right pointer left
+int remove_duplicates(vector<int>& arr) {
+    if (arr.empty()) return 0;
+    int write = 1;
+    for (int read = 1; read < (int)arr.size(); ++read) {
+        if (arr[read] != arr[write - 1]) {
+            arr[write++] = arr[read];
+        }
+    }
+    return write;
+}
 
-    return []
+vector<vector<int>> three_sum(vector<int> nums) {
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> result;
 
-# ─── VARIANT 2: SAME DIRECTION (write pointer for in-place ops) ──────────────
-def remove_duplicates(arr):
-    if not arr:
-        return 0
+    for (int i = 0; i + 2 < (int)nums.size(); ++i) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+        int left = i + 1, right = (int)nums.size() - 1;
+        while (left < right) {
+            long long total = 1LL * nums[i] + nums[left] + nums[right];
+            if (total == 0) {
+                result.push_back({nums[i], nums[left], nums[right]});
+                while (left < right && nums[left] == nums[left + 1]) ++left;
+                while (left < right && nums[right] == nums[right - 1]) --right;
+                ++left;
+                --right;
+            } else if (total < 0) {
+                ++left;
+            } else {
+                --right;
+            }
+        }
+    }
 
-    write = 1                  # Points to where next unique element goes
-
-    for read in range(1, len(arr)):
-        if arr[read] != arr[write - 1]:    # New unique element found
-            arr[write] = arr[read]
-            write += 1
-
-    return write               # Length of deduplicated array
-
-# ─── VARIANT 3: 3SUM (fix one, two-pointer the rest) ─────────────────────────
-def three_sum(nums):
-    nums.sort()
-    result = []
-
-    for i in range(len(nums) - 2):
-        if i > 0 and nums[i] == nums[i - 1]:   # Skip duplicates for fixed element
-            continue
-
-        left, right = i + 1, len(nums) - 1
-
-        while left < right:
-            total = nums[i] + nums[left] + nums[right]
-
-            if total == 0:
-                result.append([nums[i], nums[left], nums[right]])
-                while left < right and nums[left] == nums[left + 1]:
-                    left += 1                   # Skip duplicates
-                while left < right and nums[right] == nums[right - 1]:
-                    right -= 1
-                left += 1
-                right -= 1
-            elif total < 0:
-                left += 1
-            else:
-                right -= 1
-
-    return result
+    return result;
+}
 ```
 
 ---
@@ -612,70 +604,70 @@ Imagine a magnifying glass sliding across a newspaper. Instead of re-reading the
 
 ## 📐 Core Template
 
-```python
-# ─── FIXED SIZE WINDOW ────────────────────────────────────────────────────────
-def max_sum_fixed(arr, k):
-    # O(n) instead of O(n*k)
-    window_sum = sum(arr[:k])          # Initialize first window
-    max_sum = window_sum
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(k, len(arr)):
-        window_sum += arr[i] - arr[i - k]   # Add new tail, remove old head
-        max_sum = max(max_sum, window_sum)
+int max_sum_fixed(const vector<int>& arr, int k) {
+    int window_sum = 0;
+    for (int i = 0; i < k; ++i) window_sum += arr[i];
+    int best = window_sum;
+    for (int i = k; i < (int)arr.size(); ++i) {
+        window_sum += arr[i] - arr[i - k];
+        best = max(best, window_sum);
+    }
+    return best;
+}
 
-    return max_sum
+int longest_valid_window(const string& s, int k) {
+    unordered_map<char, int> freq;
+    int left = 0;
+    int result = 0;
+    for (int right = 0; right < (int)s.size(); ++right) {
+        freq[s[right]]++;
+        while ((int)freq.size() > k) {
+            if (--freq[s[left]] == 0) freq.erase(s[left]);
+            ++left;
+        }
+        result = max(result, right - left + 1);
+    }
+    return result;
+}
 
+string shortest_valid_window(const string& s, const unordered_map<char, int>& target_counts) {
+    unordered_map<char, int> need = target_counts;
+    int missing = 0;
+    for (const auto& entry : need) missing += entry.second;
 
-# ─── VARIABLE SIZE WINDOW (find longest valid window) ────────────────────────
-def longest_valid_window(s, k):
-    # Example: longest substring with at most k distinct characters
-    left = 0
-    freq = {}                          # Tracks contents of the current window
-    result = 0
+    int left = 0;
+    int best_len = INT_MAX;
+    int best_left = 0;
 
-    for right in range(len(s)):
-        # ── EXPAND: add s[right] to window ───────────────────────────────────
-        freq[s[right]] = freq.get(s[right], 0) + 1
+    for (int right = 0; right < (int)s.size(); ++right) {
+        auto it = need.find(s[right]);
+        if (it != need.end()) {
+            if (it->second > 0) --missing;
+            --it->second;
+        }
 
-        # ── SHRINK: while window is INVALID, move left ────────────────────────
-        while len(freq) > k:           # Condition depends on the problem!
-            freq[s[left]] -= 1
-            if freq[s[left]] == 0:
-                del freq[s[left]]
-            left += 1
+        while (missing == 0) {
+            int window_len = right - left + 1;
+            if (window_len < best_len) {
+                best_len = window_len;
+                best_left = left;
+            }
 
-        # ── RECORD: window is now valid, update result ─────────────────────────
-        result = max(result, right - left + 1)
+            auto left_it = need.find(s[left]);
+            if (left_it != need.end()) {
+                ++left_it->second;
+                if (left_it->second > 0) ++missing;
+            }
+            ++left;
+        }
+    }
 
-    return result
-
-
-# ─── VARIABLE SIZE WINDOW (find shortest valid window) ───────────────────────
-def shortest_valid_window(s, target_counts):
-    # Example: minimum window containing all target characters
-    need = dict(target_counts)         # Characters still needed
-    missing = sum(need.values())       # Total characters still needed
-    left = 0
-    best = (float('inf'), 0, 0)        # (length, left, right)
-
-    for right, char in enumerate(s):
-        if char in need:
-            need[char] -= 1
-            if need[char] == 0:
-                missing -= 1           # One more character type is satisfied
-
-        while missing == 0:            # Window is valid — try to shrink
-            span = right - left + 1
-            if span < best[0]:
-                best = (span, left, right)
-
-            if s[left] in need:
-                need[s[left]] += 1
-                if need[s[left]] > 0:
-                    missing += 1       # Window becomes invalid after shrinking
-            left += 1
-
-    return s[best[1]: best[2] + 1] if best[0] != float('inf') else ""
+    return best_len == INT_MAX ? string() : s.substr(best_left, best_len);
+}
 ```
 
 ---
@@ -766,53 +758,55 @@ For finding the middle: when the fast pointer reaches the end, the slow pointer 
 
 ## 📐 Core Template
 
-```python
-# ─── CYCLE DETECTION ──────────────────────────────────────────────────────────
-def has_cycle(head):
-    slow = fast = head
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while fast and fast.next:
-        slow = slow.next           # Move 1 step
-        fast = fast.next.next      # Move 2 steps
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-        if slow == fast:
-            return True            # They met inside a cycle
+bool has_cycle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) return true;
+    }
+    return false;
+}
 
-    return False                   # Fast reached None → no cycle
+ListNode* detect_cycle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
 
-# ─── FIND CYCLE START ─────────────────────────────────────────────────────────
-def detect_cycle(head):
-    slow = fast = head
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) break;
+    }
+    if (!fast || !fast->next) return nullptr;
 
-    # Phase 1: Detect meeting point inside cycle
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            break
-    else:
-        return None                # No cycle
+    slow = head;
+    while (slow != fast) {
+        slow = slow->next;
+        fast = fast->next;
+    }
+    return slow;
+}
 
-    # Phase 2: Find cycle start
-    # Mathematical proof: distance(head → start) == distance(meeting → start)
-    slow = head
-    while slow != fast:
-        slow = slow.next
-        fast = fast.next
-
-    return slow                    # Both pointers are now at cycle start
-
-# ─── FIND MIDDLE ──────────────────────────────────────────────────────────────
-def find_middle(head):
-    slow = fast = head
-
-    # When fast reaches end, slow is at middle
-    # Even length: slow ends at second middle node
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-
-    return slow
+ListNode* find_middle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
 ```
 
 ---
@@ -889,65 +883,46 @@ You're looking for a name in a phone book. You don't start from page 1 — you o
 
 ## 📐 Core Template
 
-```python
-# ─── CLASSIC BINARY SEARCH ────────────────────────────────────────────────────
-def binary_search(arr, target):
-    left, right = 0, len(arr) - 1
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while left <= right:
-        mid = left + (right - left) // 2     # NEVER use (left + right) // 2
-                                              # → integer overflow in other languages
+int binary_search_exact(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
 
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1                    # Target is in RIGHT half
-        else:
-            right = mid - 1                   # Target is in LEFT half
+int lower_bound_index(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size();
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] < target) left = mid + 1;
+        else right = mid;
+    }
+    return left;
+}
 
-    return -1                                 # Not found
-
-# ─── FIND LEFTMOST (FIRST) OCCURRENCE ─────────────────────────────────────────
-def find_first(arr, target):
-    left, right = 0, len(arr) - 1
-    result = -1
-
-    while left <= right:
-        mid = left + (right - left) // 2
-
-        if arr[mid] == target:
-            result = mid           # Record, but keep searching LEFT
-            right = mid - 1
-        elif arr[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-
-    return result
-
-# ─── ROTATED SORTED ARRAY ─────────────────────────────────────────────────────
-def search_rotated(arr, target):
-    left, right = 0, len(arr) - 1
-
-    while left <= right:
-        mid = left + (right - left) // 2
-
-        if arr[mid] == target:
-            return mid
-
-        # KEY INSIGHT: One half is ALWAYS sorted in a rotated array
-        if arr[left] <= arr[mid]:                    # Left half is sorted
-            if arr[left] <= target < arr[mid]:
-                right = mid - 1                      # Target is in left half
-            else:
-                left = mid + 1                       # Target is in right half
-        else:                                        # Right half is sorted
-            if arr[mid] < target <= arr[right]:
-                left = mid + 1                       # Target is in right half
-            else:
-                right = mid - 1                      # Target is in left half
-
-    return -1
+int search_rotated_sorted_array(const vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[left] <= nums[mid]) {
+            if (nums[left] <= target && target < nums[mid]) right = mid - 1;
+            else left = mid + 1;
+        } else {
+            if (nums[mid] < target && target <= nums[right]) left = mid + 1;
+            else right = mid - 1;
+        }
+    }
+    return -1;
+}
 ```
 
 ---
@@ -1030,75 +1005,31 @@ If all 4 hold → Binary Search on Answer, giving O(n log n) total.
 
 ## 📐 Core Template
 
-```python
-# ─── BINARY SEARCH ON ANSWER (find minimum valid) ────────────────────────────
-def binary_search_answer(arr, constraint):
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Step 1: Define the search space
-    left = min_possible_answer          # E.g., 1, min(arr), or 0
-    right = max_possible_answer         # E.g., sum(arr), max(arr)
+template <typename Feasible>
+int binary_search_answer(int lo, int hi, Feasible feasible) {
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (feasible(mid)) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
 
-    # Step 2: Binary search the boundary
-    while left < right:                 # NOT <=, we want the boundary
-        mid = left + (right - left) // 2
-
-        if is_feasible(arr, mid, constraint):
-            right = mid                 # Valid! Try to find something smaller
-        else:
-            left = mid + 1              # Invalid, need to go bigger
-
-    return left                         # left == right == the minimum valid answer
-
-
-# ─── EXAMPLE: KOKO EATING BANANAS ────────────────────────────────────────────
-def min_eating_speed(piles, h):
-    import math
-
-    def can_finish(speed):
-        # Can Koko finish all piles at this speed in h hours?
-        hours_needed = sum(math.ceil(pile / speed) for pile in piles)
-        return hours_needed <= h
-
-    left, right = 1, max(piles)         # Speed between 1 and max pile size
-
-    while left < right:
-        mid = left + (right - left) // 2
-        if can_finish(mid):
-            right = mid                 # Try slower
-        else:
-            left = mid + 1             # Need to go faster
-
-    return left
-
-
-# ─── EXAMPLE: SPLIT ARRAY LARGEST SUM ────────────────────────────────────────
-def split_array(nums, k):
-
-    def is_feasible(max_sum):
-        # Can we split nums into k parts where each part sum ≤ max_sum?
-        parts = 1
-        current_sum = 0
-        for num in nums:
-            if current_sum + num > max_sum:
-                parts += 1             # Start new partition
-                current_sum = num
-                if parts > k:
-                    return False
-            else:
-                current_sum += num
-        return True
-
-    left = max(nums)                    # At minimum, max single element
-    right = sum(nums)                   # At maximum, entire array in one part
-
-    while left < right:
-        mid = left + (right - left) // 2
-        if is_feasible(mid):
-            right = mid
-        else:
-            left = mid + 1
-
-    return left
+int minEatingSpeed(const vector<int>& piles, int h) {
+    int hi = *max_element(piles.begin(), piles.end());
+    auto feasible = [&](int speed) {
+        long long hours = 0;
+        for (int pile : piles) {
+            hours += (pile + speed - 1) / speed;
+        }
+        return hours <= h;
+    };
+    return binary_search_answer(1, hi, feasible);
+}
 ```
 
 ---
@@ -1173,48 +1104,49 @@ Greedy is the algorithm that always orders the cheapest coffee, then the cheapes
 
 ## 📐 Core Template
 
-```python
-# ─── JUMP GAME (can we reach the end?) ───────────────────────────────────────
-def can_jump(nums):
-    max_reach = 0                       # Farthest index we can currently reach
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i, jump in enumerate(nums):
-        if i > max_reach:
-            return False                # We're stuck, can't reach index i
-        max_reach = max(max_reach, i + jump)   # Greedily extend reach
+bool can_jump(const vector<int>& nums) {
+    int max_reach = 0;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        if (i > max_reach) return false;
+        max_reach = max(max_reach, i + nums[i]);
+    }
+    return true;
+}
 
-    return True
+int max_non_overlapping(vector<pair<int, int>> intervals) {
+    sort(intervals.begin(), intervals.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+    int count = 0;
+    int last_end = INT_MIN;
+    for (const auto& interval : intervals) {
+        if (interval.first >= last_end) {
+            ++count;
+            last_end = interval.second;
+        }
+    }
+    return count;
+}
 
-# ─── INTERVAL SCHEDULING (maximum non-overlapping) ───────────────────────────
-def max_non_overlapping(intervals):
-    # Greedy: always pick the interval that ends earliest
-    intervals.sort(key=lambda x: x[1])   # Sort by END time
-    count = 0
-    last_end = float('-inf')
-
-    for start, end in intervals:
-        if start >= last_end:            # No overlap with last chosen
-            count += 1
-            last_end = end               # Greedily commit to this interval
-
-    return count
-
-# ─── GAS STATION (circular greedy) ───────────────────────────────────────────
-def can_complete_circuit(gas, cost):
-    total_surplus = 0
-    current_surplus = 0
-    start = 0
-
-    for i in range(len(gas)):
-        net = gas[i] - cost[i]
-        total_surplus += net
-        current_surplus += net
-
-        if current_surplus < 0:          # Can't reach next station from 'start'
-            start = i + 1               # Restart: try starting after this station
-            current_surplus = 0
-
-    return start if total_surplus >= 0 else -1
+int can_complete_circuit(const vector<int>& gas, const vector<int>& cost) {
+    int total_surplus = 0;
+    int current_surplus = 0;
+    int start = 0;
+    for (int i = 0; i < (int)gas.size(); ++i) {
+        int net = gas[i] - cost[i];
+        total_surplus += net;
+        current_surplus += net;
+        if (current_surplus < 0) {
+            start = i + 1;
+            current_surplus = 0;
+        }
+    }
+    return total_surplus >= 0 ? start : -1;
+}
 ```
 
 ---
@@ -1272,43 +1204,27 @@ Bits are nature's toggle switches — a 0 or a 1. XOR is the magician of bit ope
 
 ## 📐 Core Bit Operations
 
-```python
-# ─── ESSENTIAL BIT TRICKS ────────────────────────────────────────────────────
-x & (x - 1)      # Clears the lowest set bit of x (used to count bits)
-x & (-x)         # Isolates the lowest set bit of x
-x ^ x            # Always 0 (cancellation)
-x ^ 0            # Always x (identity)
-x >> 1           # Divide by 2
-x << 1           # Multiply by 2
-x & 1            # Check if x is odd (last bit)
-~x               # Bitwise NOT
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── SINGLE NUMBER (XOR cancellation) ────────────────────────────────────────
-def single_number(nums):
-    result = 0
-    for num in nums:
-        result ^= num              # All duplicates cancel, unique remains
-    return result
+int singleNumber(const vector<int>& nums) {
+    int x = 0;
+    for (int num : nums) x ^= num;
+    return x;
+}
 
-# ─── COUNT SET BITS (Hamming Weight) ─────────────────────────────────────────
-def count_bits(n):
-    count = 0
-    while n:
-        n &= n - 1                 # Each iteration removes one set bit
-        count += 1
-    return count
+bool isPowerOfTwo(int n) {
+    return n > 0 && (n & (n - 1)) == 0;
+}
 
-# ─── POWER OF TWO CHECK ───────────────────────────────────────────────────────
-def is_power_of_two(n):
-    return n > 0 and (n & (n - 1)) == 0   # Powers of 2 have exactly one set bit
-
-# ─── MISSING NUMBER ───────────────────────────────────────────────────────────
-def missing_number(nums):
-    n = len(nums)
-    result = n                     # Start with n
-    for i, num in enumerate(nums):
-        result ^= i ^ num          # XOR with both index and value
-    return result                  # Remaining = missing number
+vector<int> countBits(int n) {
+    vector<int> dp(n + 1, 0);
+    for (int i = 1; i <= n; ++i) {
+        dp[i] = dp[i >> 1] + (i & 1);
+    }
+    return dp;
+}
 ```
 
 ---
@@ -1353,45 +1269,50 @@ Divide & Conquer is the military strategy of "defeat in detail" — split the en
 
 ## 📐 Core Template
 
-```python
-# ─── MERGE SORT (classic D&C template) ───────────────────────────────────────
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr                         # Base case
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])           # Conquer left
-    right = merge_sort(arr[mid:])          # Conquer right
-    return merge(left, right)              # Combine
+vector<int> merge_vectors(const vector<int>& left, const vector<int>& right) {
+    vector<int> result;
+    int i = 0, j = 0;
+    while (i < (int)left.size() && j < (int)right.size()) {
+        if (left[i] <= right[j]) result.push_back(left[i++]);
+        else result.push_back(right[j++]);
+    }
+    while (i < (int)left.size()) result.push_back(left[i++]);
+    while (j < (int)right.size()) result.push_back(right[j++]);
+    return result;
+}
 
-def merge(left, right):
-    result = []
-    i = j = 0
-    while i < len(left) and j < len(right):
-        if left[i] <= right[j]:
-            result.append(left[i]); i += 1
-        else:
-            result.append(right[j]); j += 1
-    return result + left[i:] + right[j:]
+vector<int> merge_sort(const vector<int>& arr) {
+    if (arr.size() <= 1) return arr;
+    int mid = (int)arr.size() / 2;
+    vector<int> left(arr.begin(), arr.begin() + mid);
+    vector<int> right(arr.begin() + mid, arr.end());
+    left = merge_sort(left);
+    right = merge_sort(right);
+    return merge_vectors(left, right);
+}
 
-# ─── MAJORITY ELEMENT (Boyer-Moore / D&C) ────────────────────────────────────
-def majority_element(nums):
-    def helper(lo, hi):
-        if lo == hi:
-            return nums[lo]                # Base case: single element
+int majority_helper(const vector<int>& nums, int lo, int hi) {
+    if (lo == hi) return nums[lo];
+    int mid = lo + (hi - lo) / 2;
+    int left_major = majority_helper(nums, lo, mid);
+    int right_major = majority_helper(nums, mid + 1, hi);
+    if (left_major == right_major) return left_major;
 
-        mid = (lo + hi) // 2
-        left_maj = helper(lo, mid)
-        right_maj = helper(mid + 1, hi)
+    int left_count = 0, right_count = 0;
+    for (int i = lo; i <= hi; ++i) {
+        if (nums[i] == left_major) ++left_count;
+        if (nums[i] == right_major) ++right_count;
+    }
+    return left_count > right_count ? left_major : right_major;
+}
 
-        if left_maj == right_maj:
-            return left_maj
-
-        left_count = sum(1 for i in range(lo, hi+1) if nums[i] == left_maj)
-        right_count = sum(1 for i in range(lo, hi+1) if nums[i] == right_maj)
-        return left_maj if left_count > right_count else right_maj
-
-    return helper(0, len(nums) - 1)
+int majority_element(const vector<int>& nums) {
+    return majority_helper(nums, 0, (int)nums.size() - 1);
+}
 ```
 
 ---

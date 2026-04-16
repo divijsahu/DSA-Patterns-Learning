@@ -22,29 +22,21 @@ A regular sliding window tracks content with a hash map. But if you need the *ma
 
 ## 📐 Core Template
 
-```python
-from collections import deque
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-def sliding_window_maximum(nums, k):
-    dq = deque()                       # Stores INDICES, values monotonically decreasing
-    result = []
-
-    for i, num in enumerate(nums):
-        # Remove elements outside the window from the FRONT
-        while dq and dq[0] < i - k + 1:
-            dq.popleft()
-
-        # Remove smaller elements from the BACK (they can never be max)
-        while dq and nums[dq[-1]] < num:
-            dq.pop()
-
-        dq.append(i)
-
-        # Window is fully formed after the first k elements
-        if i >= k - 1:
-            result.append(nums[dq[0]])  # Front is always the current maximum
-
-    return result
+vector<int> maxSlidingWindow(const vector<int>& nums, int k) {
+    deque<int> dq;
+    vector<int> result;
+    for (int i = 0; i < (int)nums.size(); ++i) {
+        while (!dq.empty() && dq.front() <= i - k) dq.pop_front();
+        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if (i >= k - 1) result.push_back(nums[dq.front()]);
+    }
+    return result;
+}
 ```
 
 ---

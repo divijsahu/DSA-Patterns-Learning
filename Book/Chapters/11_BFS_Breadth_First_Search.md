@@ -37,91 +37,94 @@ Drop a pebble in still water and watch the ripples. Each ripple ring represents 
 
 ## 📐 Core Template
 
-```python
-from collections import deque
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── STANDARD GRAPH BFS ───────────────────────────────────────────────────────
-def bfs(graph, start, target):
-    queue = deque([start])
-    visited = {start}              # Add to visited when ENQUEUING, not dequeuing
-    steps = 0
+int bfs(const unordered_map<int, vector<int>>& graph, int start, int target) {
+    queue<int> q;
+    unordered_set<int> visited;
+    q.push(start);
+    visited.insert(start);
+    int steps = 0;
 
-    while queue:
-        # Process all nodes at the current distance level
-        for _ in range(len(queue)):
-            node = queue.popleft()
+    while (!q.empty()) {
+        int level_size = q.size();
+        while (level_size--) {
+            int node = q.front(); q.pop();
+            if (node == target) return steps;
+            auto it = graph.find(node);
+            if (it == graph.end()) continue;
+            for (int neighbor : it->second) {
+                if (!visited.count(neighbor)) {
+                    visited.insert(neighbor);
+                    q.push(neighbor);
+                }
+            }
+        }
+        ++steps;
+    }
+    return -1;
+}
 
-            if node == target:
-                return steps
+int bfs_grid(vector<vector<int>>& grid, int start_r, int start_c, int target_r, int target_c) {
+    int rows = grid.size(), cols = grid[0].size();
+    queue<pair<int, int>> q;
+    vector<vector<int>> visited(rows, vector<int>(cols, 0));
+    q.push({start_r, start_c});
+    visited[start_r][start_c] = 1;
+    int steps = 0;
+    vector<pair<int, int>> dirs{{0,1},{0,-1},{1,0},{-1,0}};
 
-            for neighbor in graph[node]:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append(neighbor)
+    while (!q.empty()) {
+        int level_size = q.size();
+        while (level_size--) {
+            auto [r, c] = q.front(); q.pop();
+            if (r == target_r && c == target_c) return steps;
+            for (auto [dr, dc] : dirs) {
+                int nr = r + dr, nc = c + dc;
+                if (0 <= nr && nr < rows && 0 <= nc && nc < cols && !visited[nr][nc] && grid[nr][nc] != 0) {
+                    visited[nr][nc] = 1;
+                    q.push({nr, nc});
+                }
+            }
+        }
+        ++steps;
+    }
+    return -1;
+}
 
-        steps += 1                 # Completed one full level
+int multi_source_bfs(vector<vector<int>>& grid) {
+    int rows = grid.size(), cols = grid[0].size();
+    queue<pair<int, int>> q;
+    int fresh_count = 0;
 
-    return -1                      # Target unreachable
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (grid[r][c] == 2) q.push({r, c});
+            else if (grid[r][c] == 1) ++fresh_count;
+        }
+    }
 
-
-# ─── GRID BFS ─────────────────────────────────────────────────────────────────
-def bfs_grid(grid, start_r, start_c, target_r, target_c):
-    rows, cols = len(grid), len(grid[0])
-    queue = deque([(start_r, start_c)])
-    visited = {(start_r, start_c)}
-    steps = 0
-
-    # 4-directional movement (add diagonals for 8-directional)
-    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
-    while queue:
-        for _ in range(len(queue)):
-            r, c = queue.popleft()
-
-            if r == target_r and c == target_c:
-                return steps
-
-            for dr, dc in directions:
-                nr, nc = r + dr, c + dc
-                if (0 <= nr < rows and 0 <= nc < cols
-                        and (nr, nc) not in visited
-                        and grid[nr][nc] != 0):      # 0 = blocked
-                    visited.add((nr, nc))
-                    queue.append((nr, nc))
-
-        steps += 1
-
-    return -1
-
-
-# ─── MULTI-SOURCE BFS ─────────────────────────────────────────────────────────
-def multi_source_bfs(grid):
-    # Example: rotting oranges — all sources spread simultaneously
-    rows, cols = len(grid), len(grid[0])
-    queue = deque()
-    fresh_count = 0
-
-    # Initialize: add ALL sources at once
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 2:       # Rotten orange = source
-                queue.append((r, c))
-            elif grid[r][c] == 1:
-                fresh_count += 1
-
-    minutes = 0
-    while queue and fresh_count > 0:
-        for _ in range(len(queue)):
-            r, c = queue.popleft()
-            for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
-                    grid[nr][nc] = 2
-                    fresh_count -= 1
-                    queue.append((nr, nc))
-        minutes += 1
-
-    return minutes if fresh_count == 0 else -1
+    int minutes = 0;
+    vector<pair<int, int>> dirs{{0,1},{0,-1},{1,0},{-1,0}};
+    while (!q.empty() && fresh_count > 0) {
+        int level_size = q.size();
+        while (level_size--) {
+            auto [r, c] = q.front(); q.pop();
+            for (auto [dr, dc] : dirs) {
+                int nr = r + dr, nc = c + dc;
+                if (0 <= nr && nr < rows && 0 <= nc && nc < cols && grid[nr][nc] == 1) {
+                    grid[nr][nc] = 2;
+                    --fresh_count;
+                    q.push({nr, nc});
+                }
+            }
+        }
+        ++minutes;
+    }
+    return fresh_count == 0 ? minutes : -1;
+}
 ```
 
 ---

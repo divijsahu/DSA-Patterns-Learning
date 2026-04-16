@@ -33,61 +33,67 @@ DFS is the algorithm that goes all-in before giving up. Imagine navigating a maz
 
 ## 📐 Core Template
 
-```python
-# ─── GRAPH DFS (recursive) ────────────────────────────────────────────────────
-def dfs(graph, node, visited):
-    visited.add(node)
-    process(node)                          # Do something with current node
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for neighbor in graph[node]:
-        if neighbor not in visited:
-            dfs(graph, neighbor, visited)
+void dfs(const unordered_map<int, vector<int>>& graph, int node, unordered_set<int>& visited) {
+    visited.insert(node);
+    auto it = graph.find(node);
+    if (it == graph.end()) return;
+    for (int neighbor : it->second) {
+        if (!visited.count(neighbor)) dfs(graph, neighbor, visited);
+    }
+}
 
-# ─── GRAPH DFS (iterative) ────────────────────────────────────────────────────
-def dfs_iterative(graph, start):
-    stack = [start]
-    visited = {start}
+void dfs_iterative(const unordered_map<int, vector<int>>& graph, int start) {
+    stack<int> st;
+    unordered_set<int> visited;
+    st.push(start);
+    visited.insert(start);
 
-    while stack:
-        node = stack.pop()
-        process(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                stack.append(neighbor)
+    while (!st.empty()) {
+        int node = st.top(); st.pop();
+        auto it = graph.find(node);
+        if (it == graph.end()) continue;
+        for (int neighbor : it->second) {
+            if (!visited.count(neighbor)) {
+                visited.insert(neighbor);
+                st.push(neighbor);
+            }
+        }
+    }
+}
 
-# ─── CYCLE DETECTION IN DIRECTED GRAPH ───────────────────────────────────────
-def has_cycle(graph, n):
-    # 0 = unvisited, 1 = in current DFS path (gray), 2 = fully processed (black)
-    state = [0] * n
+bool has_cycle_directed(const vector<vector<int>>& graph) {
+    int n = graph.size();
+    vector<int> state(n, 0);
 
-    def dfs_cycle(node):
-        state[node] = 1                    # Mark as "in progress"
+    function<bool(int)> dfs_cycle = [&](int node) {
+        state[node] = 1;
+        for (int neighbor : graph[node]) {
+            if (state[neighbor] == 1) return true;
+            if (state[neighbor] == 0 && dfs_cycle(neighbor)) return true;
+        }
+        state[node] = 2;
+        return false;
+    };
 
-        for neighbor in graph[node]:
-            if state[neighbor] == 1:
-                return True                # Back edge = cycle!
-            if state[neighbor] == 0:
-                if dfs_cycle(neighbor):
-                    return True
+    for (int i = 0; i < n; ++i) {
+        if (state[i] == 0 && dfs_cycle(i)) return true;
+    }
+    return false;
+}
 
-        state[node] = 2                    # Mark as "done"
-        return False
-
-    return any(dfs_cycle(i) for i in range(n) if state[i] == 0)
-
-# ─── GRID DFS ─────────────────────────────────────────────────────────────────
-def dfs_grid(grid, r, c):
-    rows, cols = len(grid), len(grid[0])
-    if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != 1:
-        return                             # Out of bounds or not land
-
-    grid[r][c] = 0                         # Mark visited (in-place, avoid set)
-
-    dfs_grid(grid, r + 1, c)
-    dfs_grid(grid, r - 1, c)
-    dfs_grid(grid, r, c + 1)
-    dfs_grid(grid, r, c - 1)
+void dfs_grid(vector<vector<int>>& grid, int r, int c) {
+    int rows = grid.size(), cols = grid[0].size();
+    if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] != 1) return;
+    grid[r][c] = 0;
+    dfs_grid(grid, r + 1, c);
+    dfs_grid(grid, r - 1, c);
+    dfs_grid(grid, r, c + 1);
+    dfs_grid(grid, r, c - 1);
+}
 ```
 
 ---

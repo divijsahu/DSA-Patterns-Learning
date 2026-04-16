@@ -23,88 +23,80 @@ Matrix problems require understanding the coordinate system and the relationship
 
 ## 📐 Core Template
 
-```python
-# ─── ROTATE MATRIX 90° CLOCKWISE ─────────────────────────────────────────────
-def rotate(matrix):
-    n = len(matrix)
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Step 1: Transpose (swap matrix[i][j] with matrix[j][i])
-    for i in range(n):
-        for j in range(i + 1, n):
-            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+void rotate(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            swap(matrix[i][j], matrix[j][i]);
+        }
+    }
+    for (auto& row : matrix) reverse(row.begin(), row.end());
+}
 
-    # Step 2: Reverse each row
-    for row in matrix:
-        row.reverse()
+vector<int> spiral_order(const vector<vector<int>>& matrix) {
+    vector<int> result;
+    if (matrix.empty()) return result;
+    int top = 0, bottom = matrix.size() - 1;
+    int left = 0, right = matrix[0].size() - 1;
+    while (top <= bottom && left <= right) {
+        for (int c = left; c <= right; ++c) result.push_back(matrix[top][c]);
+        ++top;
+        for (int r = top; r <= bottom; ++r) result.push_back(matrix[r][right]);
+        --right;
+        if (top <= bottom) {
+            for (int c = right; c >= left; --c) result.push_back(matrix[bottom][c]);
+            --bottom;
+        }
+        if (left <= right) {
+            for (int r = bottom; r >= top; --r) result.push_back(matrix[r][left]);
+            ++left;
+        }
+    }
+    return result;
+}
 
+void set_zeroes(vector<vector<int>>& matrix) {
+    int rows = matrix.size(), cols = matrix[0].size();
+    vector<int> zero_rows(rows, 0), zero_cols(cols, 0);
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (matrix[r][c] == 0) {
+                zero_rows[r] = 1;
+                zero_cols[c] = 1;
+            }
+        }
+    }
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            if (zero_rows[r] || zero_cols[c]) matrix[r][c] = 0;
+        }
+    }
+}
 
-# ─── SPIRAL ORDER TRAVERSAL ───────────────────────────────────────────────────
-def spiral_order(matrix):
-    result = []
-    top, bottom = 0, len(matrix) - 1
-    left, right = 0, len(matrix[0]) - 1
+vector<pair<int, int>> get_neighbors_4(int r, int c, int rows, int cols) {
+    vector<pair<int, int>> neighbors;
+    for (auto [dr, dc] : vector<pair<int, int>>{{0,1},{0,-1},{1,0},{-1,0}}) {
+        int nr = r + dr, nc = c + dc;
+        if (0 <= nr && nr < rows && 0 <= nc && nc < cols) neighbors.push_back({nr, nc});
+    }
+    return neighbors;
+}
 
-    while top <= bottom and left <= right:
-        # Traverse right (top row)
-        for col in range(left, right + 1):
-            result.append(matrix[top][col])
-        top += 1
-
-        # Traverse down (right column)
-        for row in range(top, bottom + 1):
-            result.append(matrix[row][right])
-        right -= 1
-
-        # Traverse left (bottom row)
-        if top <= bottom:
-            for col in range(right, left - 1, -1):
-                result.append(matrix[bottom][col])
-            bottom -= 1
-
-        # Traverse up (left column)
-        if left <= right:
-            for row in range(bottom, top - 1, -1):
-                result.append(matrix[row][left])
-            left += 1
-
-    return result
-
-
-# ─── SET MATRIX ZEROES (in-place) ────────────────────────────────────────────
-def set_zeroes(matrix):
-    rows, cols = len(matrix), len(matrix[0])
-    zero_rows, zero_cols = set(), set()
-
-    # First pass: find which rows and cols have zeros
-    for r in range(rows):
-        for c in range(cols):
-            if matrix[r][c] == 0:
-                zero_rows.add(r)
-                zero_cols.add(c)
-
-    # Second pass: set zeros
-    for r in range(rows):
-        for c in range(cols):
-            if r in zero_rows or c in zero_cols:
-                matrix[r][c] = 0
-
-
-# ─── USEFUL GRID UTILITIES ───────────────────────────────────────────────────
-def get_neighbors_4(r, c, rows, cols):
-    """4-directional grid neighbors"""
-    for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < rows and 0 <= nc < cols:
-            yield nr, nc
-
-def get_neighbors_8(r, c, rows, cols):
-    """8-directional grid neighbors (including diagonals)"""
-    for dr in [-1, 0, 1]:
-        for dc in [-1, 0, 1]:
-            if dr == 0 and dc == 0: continue
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                yield nr, nc
+vector<pair<int, int>> get_neighbors_8(int r, int c, int rows, int cols) {
+    vector<pair<int, int>> neighbors;
+    for (int dr = -1; dr <= 1; ++dr) {
+        for (int dc = -1; dc <= 1; ++dc) {
+            if (dr == 0 && dc == 0) continue;
+            int nr = r + dr, nc = c + dc;
+            if (0 <= nr && nr < rows && 0 <= nc && nc < cols) neighbors.push_back({nr, nc});
+        }
+    }
+    return neighbors;
+}
 ```
 
 ---

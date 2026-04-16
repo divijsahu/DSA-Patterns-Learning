@@ -23,60 +23,56 @@ Topological sort gives a linear ordering of nodes in a directed acyclic graph (D
 
 ## 📐 Core Template
 
-```python
-from collections import deque, defaultdict
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-# ─── KAHN'S ALGORITHM (BFS-based topological sort) ───────────────────────────
-def topo_sort(n, prerequisites):
-    graph = defaultdict(list)         # Adjacency list
-    in_degree = [0] * n               # How many prerequisites does each node have?
+vector<int> topo_sort(int n, const vector<pair<int, int>>& prerequisites) {
+    vector<vector<int>> graph(n);
+    vector<int> indegree(n, 0);
+    for (auto [course, prereq] : prerequisites) {
+        graph[prereq].push_back(course);
+        ++indegree[course];
+    }
+    queue<int> q;
+    for (int i = 0; i < n; ++i) {
+        if (indegree[i] == 0) q.push(i);
+    }
+    vector<int> order;
+    while (!q.empty()) {
+        int node = q.front(); q.pop();
+        order.push_back(node);
+        for (int neighbor : graph[node]) {
+            if (--indegree[neighbor] == 0) q.push(neighbor);
+        }
+    }
+    return (int)order.size() == n ? order : vector<int>{};
+}
 
-    for course, prereq in prerequisites:
-        graph[prereq].append(course)
-        in_degree[course] += 1
+vector<int> topo_sort_dfs(int n, const vector<vector<int>>& graph) {
+    vector<int> state(n, 0);
+    vector<int> order;
+    bool has_cycle = false;
 
-    # Start with all nodes that have NO prerequisites
-    queue = deque([i for i in range(n) if in_degree[i] == 0])
-    order = []
+    function<void(int)> dfs = [&](int node) {
+        if (state[node] == 1) {
+            has_cycle = true;
+            return;
+        }
+        if (state[node] == 2) return;
+        state[node] = 1;
+        for (int neighbor : graph[node]) dfs(neighbor);
+        state[node] = 2;
+        order.push_back(node);
+    };
 
-    while queue:
-        node = queue.popleft()
-        order.append(node)
-
-        for neighbor in graph[node]:
-            in_degree[neighbor] -= 1            # Remove this prerequisite
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)          # Now this node is ready
-
-    # If we couldn't process all nodes, there's a cycle
-    return order if len(order) == n else []
-
-
-# ─── DFS-BASED TOPOLOGICAL SORT ───────────────────────────────────────────────
-def topo_sort_dfs(n, graph):
-    state = [0] * n                   # 0=unvisited, 1=visiting, 2=done
-    order = []
-    has_cycle = [False]
-
-    def dfs(node):
-        if state[node] == 1:          # Back edge = cycle!
-            has_cycle[0] = True
-            return
-        if state[node] == 2:
-            return
-
-        state[node] = 1               # Mark as visiting (in current path)
-        for neighbor in graph[node]:
-            dfs(neighbor)
-
-        state[node] = 2               # Mark as done
-        order.append(node)            # Post-order: add AFTER all descendants
-
-    for i in range(n):
-        if state[i] == 0:
-            dfs(i)
-
-    return [] if has_cycle[0] else order[::-1]   # Reverse post-order = topo order
+    for (int i = 0; i < n; ++i) {
+        if (state[i] == 0) dfs(i);
+    }
+    if (has_cycle) return {};
+    reverse(order.begin(), order.end());
+    return order;
+}
 ```
 
 ---

@@ -37,65 +37,57 @@ Picture two people walking toward each other on a number line. The left person r
 
 ## 📐 Core Template
 
-```python
-# ─── VARIANT 1: CONVERGING (find pair with target sum) ───────────────────────
-def two_sum_sorted(arr, target):
-    left, right = 0, len(arr) - 1
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while left < right:
-        current = arr[left] + arr[right]
+vector<int> two_sum_sorted(const vector<int>& arr, int target) {
+    int left = 0, right = (int)arr.size() - 1;
+    while (left < right) {
+        int current = arr[left] + arr[right];
+        if (current == target) return {left, right};
+        if (current < target) ++left;
+        else --right;
+    }
+    return {};
+}
 
-        if current == target:
-            return [left, right]
-        elif current < target:
-            left += 1          # Sum too small → move left pointer right
-        else:
-            right -= 1         # Sum too big → move right pointer left
+int remove_duplicates(vector<int>& arr) {
+    if (arr.empty()) return 0;
+    int write = 1;
+    for (int read = 1; read < (int)arr.size(); ++read) {
+        if (arr[read] != arr[write - 1]) {
+            arr[write++] = arr[read];
+        }
+    }
+    return write;
+}
 
-    return []
+vector<vector<int>> three_sum(vector<int> nums) {
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> result;
 
-# ─── VARIANT 2: SAME DIRECTION (write pointer for in-place ops) ──────────────
-def remove_duplicates(arr):
-    if not arr:
-        return 0
+    for (int i = 0; i + 2 < (int)nums.size(); ++i) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+        int left = i + 1, right = (int)nums.size() - 1;
+        while (left < right) {
+            long long total = 1LL * nums[i] + nums[left] + nums[right];
+            if (total == 0) {
+                result.push_back({nums[i], nums[left], nums[right]});
+                while (left < right && nums[left] == nums[left + 1]) ++left;
+                while (left < right && nums[right] == nums[right - 1]) --right;
+                ++left;
+                --right;
+            } else if (total < 0) {
+                ++left;
+            } else {
+                --right;
+            }
+        }
+    }
 
-    write = 1                  # Points to where next unique element goes
-
-    for read in range(1, len(arr)):
-        if arr[read] != arr[write - 1]:    # New unique element found
-            arr[write] = arr[read]
-            write += 1
-
-    return write               # Length of deduplicated array
-
-# ─── VARIANT 3: 3SUM (fix one, two-pointer the rest) ─────────────────────────
-def three_sum(nums):
-    nums.sort()
-    result = []
-
-    for i in range(len(nums) - 2):
-        if i > 0 and nums[i] == nums[i - 1]:   # Skip duplicates for fixed element
-            continue
-
-        left, right = i + 1, len(nums) - 1
-
-        while left < right:
-            total = nums[i] + nums[left] + nums[right]
-
-            if total == 0:
-                result.append([nums[i], nums[left], nums[right]])
-                while left < right and nums[left] == nums[left + 1]:
-                    left += 1                   # Skip duplicates
-                while left < right and nums[right] == nums[right - 1]:
-                    right -= 1
-                left += 1
-                right -= 1
-            elif total < 0:
-                left += 1
-            else:
-                right -= 1
-
-    return result
+    return result;
+}
 ```
 
 ---

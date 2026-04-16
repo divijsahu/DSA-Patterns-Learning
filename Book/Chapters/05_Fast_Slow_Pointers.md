@@ -38,53 +38,55 @@ For finding the middle: when the fast pointer reaches the end, the slow pointer 
 
 ## 📐 Core Template
 
-```python
-# ─── CYCLE DETECTION ──────────────────────────────────────────────────────────
-def has_cycle(head):
-    slow = fast = head
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    while fast and fast.next:
-        slow = slow.next           # Move 1 step
-        fast = fast.next.next      # Move 2 steps
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
 
-        if slow == fast:
-            return True            # They met inside a cycle
+bool has_cycle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) return true;
+    }
+    return false;
+}
 
-    return False                   # Fast reached None → no cycle
+ListNode* detect_cycle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
 
-# ─── FIND CYCLE START ─────────────────────────────────────────────────────────
-def detect_cycle(head):
-    slow = fast = head
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) break;
+    }
+    if (!fast || !fast->next) return nullptr;
 
-    # Phase 1: Detect meeting point inside cycle
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            break
-    else:
-        return None                # No cycle
+    slow = head;
+    while (slow != fast) {
+        slow = slow->next;
+        fast = fast->next;
+    }
+    return slow;
+}
 
-    # Phase 2: Find cycle start
-    # Mathematical proof: distance(head → start) == distance(meeting → start)
-    slow = head
-    while slow != fast:
-        slow = slow.next
-        fast = fast.next
-
-    return slow                    # Both pointers are now at cycle start
-
-# ─── FIND MIDDLE ──────────────────────────────────────────────────────────────
-def find_middle(head):
-    slow = fast = head
-
-    # When fast reaches end, slow is at middle
-    # Even length: slow ends at second middle node
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-
-    return slow
+ListNode* find_middle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
 ```
 
 ---

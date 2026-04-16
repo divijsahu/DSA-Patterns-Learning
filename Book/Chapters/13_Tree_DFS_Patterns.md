@@ -37,82 +37,56 @@ Trees are recursion's natural habitat. Every tree problem can be reduced to: "Gi
 
 ## 📐 Core Template
 
-```python
-# ─── POST-ORDER (most common for aggregation) ─────────────────────────────────
-def tree_dfs(node):
-    if not node:
-        return base_value              # Base case — what to return for null
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    left_val = tree_dfs(node.left)    # Recurse on left
-    right_val = tree_dfs(node.right)  # Recurse on right
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+};
 
-    # Use left_val, right_val, and node.val to compute THIS node's return value
-    return combine(left_val, right_val, node.val)
+int diameterOfBinaryTree(TreeNode* root) {
+    int best = 0;
+    function<int(TreeNode*)> height = [&](TreeNode* node) {
+        if (!node) return 0;
+        int left_h = height(node->left);
+        int right_h = height(node->right);
+        best = max(best, left_h + right_h);
+        return 1 + max(left_h, right_h);
+    };
+    height(root);
+    return best;
+}
 
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+    if (!root || root == p || root == q) return root;
+    TreeNode* left = lowestCommonAncestor(root->left, p, q);
+    TreeNode* right = lowestCommonAncestor(root->right, p, q);
+    if (left && right) return root;
+    return left ? left : right;
+}
 
-# ─── DIAMETER OF BINARY TREE ──────────────────────────────────────────────────
-def diameter_of_binary_tree(root):
-    max_diameter = [0]                 # Use list to allow mutation in nested func
+bool hasPathSum(TreeNode* root, int targetSum) {
+    if (!root) return false;
+    if (!root->left && !root->right) return root->val == targetSum;
+    return hasPathSum(root->left, targetSum - root->val) || hasPathSum(root->right, targetSum - root->val);
+}
 
-    def height(node):
-        if not node:
-            return 0
-
-        left_h = height(node.left)
-        right_h = height(node.right)
-
-        # The diameter passing THROUGH this node = left_height + right_height
-        max_diameter[0] = max(max_diameter[0], left_h + right_h)
-
-        return 1 + max(left_h, right_h)   # Return height to parent
-
-    height(root)
-    return max_diameter[0]
-
-
-# ─── LOWEST COMMON ANCESTOR ───────────────────────────────────────────────────
-def lowest_common_ancestor(root, p, q):
-    if not root or root == p or root == q:
-        return root                    # Found one of the targets (or null)
-
-    left = lowest_common_ancestor(root.left, p, q)
-    right = lowest_common_ancestor(root.right, p, q)
-
-    if left and right:
-        return root                    # p and q are in different subtrees
-    return left or right               # Both are in the same subtree
-
-
-# ─── PATH SUM (root-to-leaf) ──────────────────────────────────────────────────
-def has_path_sum(root, target):
-    if not root:
-        return False
-    if not root.left and not root.right:   # Leaf node
-        return root.val == target
-
-    remaining = target - root.val
-    return has_path_sum(root.left, remaining) or has_path_sum(root.right, remaining)
-
-
-# ─── BINARY TREE MAXIMUM PATH SUM ────────────────────────────────────────────
-def max_path_sum(root):
-    max_sum = [float('-inf')]
-
-    def gain(node):
-        if not node:
-            return 0
-
-        left_gain = max(gain(node.left), 0)     # Ignore negative paths
-        right_gain = max(gain(node.right), 0)
-
-        # Update global max: path going through this node
-        max_sum[0] = max(max_sum[0], node.val + left_gain + right_gain)
-
-        # Return the best single-branch extension to parent
-        return node.val + max(left_gain, right_gain)
-
-    gain(root)
-    return max_sum[0]
+int maxPathSum(TreeNode* root) {
+    int best = INT_MIN;
+    function<int(TreeNode*)> gain = [&](TreeNode* node) {
+        if (!node) return 0;
+        int left_gain = max(gain(node->left), 0);
+        int right_gain = max(gain(node->right), 0);
+        best = max(best, node->val + left_gain + right_gain);
+        return node->val + max(left_gain, right_gain);
+    };
+    gain(root);
+    return best;
+}
 ```
 
 ---

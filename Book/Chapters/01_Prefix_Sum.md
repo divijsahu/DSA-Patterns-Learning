@@ -39,41 +39,40 @@ Ask yourself these before coding:
 
 ## 📐 Core Template
 
-```python
-# ─── BUILD THE PREFIX SUM ARRAY ───────────────────────────────────────────────
-def build_prefix(nums):
-    n = len(nums)
-    prefix = [0] * (n + 1)          # prefix[0] = 0 acts as a sentinel
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    for i in range(n):
-        prefix[i + 1] = prefix[i] + nums[i]
+vector<int> build_prefix(const vector<int>& nums) {
+    int n = nums.size();
+    vector<int> prefix(n + 1, 0);
+    for (int i = 0; i < n; ++i) {
+        prefix[i + 1] = prefix[i] + nums[i];
+    }
+    return prefix;
+}
 
-    return prefix
+int range_sum(const vector<int>& prefix, int left, int right) {
+    return prefix[right + 1] - prefix[left];
+}
 
-# ─── RANGE SUM QUERY ──────────────────────────────────────────────────────────
-def range_sum(prefix, left, right):
-    # Sum of nums[left..right] inclusive
-    return prefix[right + 1] - prefix[left]
+int subarray_sum_equals_k(const vector<int>& nums, int k) {
+    unordered_map<int, int> seen;
+    seen[0] = 1;
+    int running_sum = 0;
+    int count = 0;
 
+    for (int num : nums) {
+        running_sum += num;
+        auto it = seen.find(running_sum - k);
+        if (it != seen.end()) {
+            count += it->second;
+        }
+        seen[running_sum] += 1;
+    }
 
-# ─── COUNT SUBARRAYS WITH SUM = K  (the powerful variant) ────────────────────
-def subarray_sum_equals_k(nums, k):
-    count = 0
-    running_sum = 0
-    seen = {0: 1}        # {prefix_sum: frequency} — seed with 0 so we catch
-                         # subarrays starting from index 0
-
-    for num in nums:
-        running_sum += num
-
-        # If (running_sum - k) was seen before, the subarray between
-        # that earlier index and now has sum = k
-        if (running_sum - k) in seen:
-            count += seen[running_sum - k]
-
-        seen[running_sum] = seen.get(running_sum, 0) + 1
-
-    return count
+    return count;
+}
 ```
 
 ---

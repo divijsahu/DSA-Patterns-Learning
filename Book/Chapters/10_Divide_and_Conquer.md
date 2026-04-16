@@ -23,45 +23,50 @@ Divide & Conquer is the military strategy of "defeat in detail" — split the en
 
 ## 📐 Core Template
 
-```python
-# ─── MERGE SORT (classic D&C template) ───────────────────────────────────────
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr                         # Base case
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])           # Conquer left
-    right = merge_sort(arr[mid:])          # Conquer right
-    return merge(left, right)              # Combine
+vector<int> merge_vectors(const vector<int>& left, const vector<int>& right) {
+    vector<int> result;
+    int i = 0, j = 0;
+    while (i < (int)left.size() && j < (int)right.size()) {
+        if (left[i] <= right[j]) result.push_back(left[i++]);
+        else result.push_back(right[j++]);
+    }
+    while (i < (int)left.size()) result.push_back(left[i++]);
+    while (j < (int)right.size()) result.push_back(right[j++]);
+    return result;
+}
 
-def merge(left, right):
-    result = []
-    i = j = 0
-    while i < len(left) and j < len(right):
-        if left[i] <= right[j]:
-            result.append(left[i]); i += 1
-        else:
-            result.append(right[j]); j += 1
-    return result + left[i:] + right[j:]
+vector<int> merge_sort(const vector<int>& arr) {
+    if (arr.size() <= 1) return arr;
+    int mid = (int)arr.size() / 2;
+    vector<int> left(arr.begin(), arr.begin() + mid);
+    vector<int> right(arr.begin() + mid, arr.end());
+    left = merge_sort(left);
+    right = merge_sort(right);
+    return merge_vectors(left, right);
+}
 
-# ─── MAJORITY ELEMENT (Boyer-Moore / D&C) ────────────────────────────────────
-def majority_element(nums):
-    def helper(lo, hi):
-        if lo == hi:
-            return nums[lo]                # Base case: single element
+int majority_helper(const vector<int>& nums, int lo, int hi) {
+    if (lo == hi) return nums[lo];
+    int mid = lo + (hi - lo) / 2;
+    int left_major = majority_helper(nums, lo, mid);
+    int right_major = majority_helper(nums, mid + 1, hi);
+    if (left_major == right_major) return left_major;
 
-        mid = (lo + hi) // 2
-        left_maj = helper(lo, mid)
-        right_maj = helper(mid + 1, hi)
+    int left_count = 0, right_count = 0;
+    for (int i = lo; i <= hi; ++i) {
+        if (nums[i] == left_major) ++left_count;
+        if (nums[i] == right_major) ++right_count;
+    }
+    return left_count > right_count ? left_major : right_major;
+}
 
-        if left_maj == right_maj:
-            return left_maj
-
-        left_count = sum(1 for i in range(lo, hi+1) if nums[i] == left_maj)
-        right_count = sum(1 for i in range(lo, hi+1) if nums[i] == right_maj)
-        return left_maj if left_count > right_count else right_maj
-
-    return helper(0, len(nums) - 1)
+int majority_element(const vector<int>& nums) {
+    return majority_helper(nums, 0, (int)nums.size() - 1);
+}
 ```
 
 ---

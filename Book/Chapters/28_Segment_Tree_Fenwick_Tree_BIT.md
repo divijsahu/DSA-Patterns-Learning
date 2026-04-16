@@ -22,69 +22,78 @@ Prefix Sum is great for static arrays but breaks when values update (you'd have 
 
 ## 📐 Core Template
 
-```python
-# ─── FENWICK TREE (BIT) — Point Update, Prefix Sum Query ─────────────────────
-class FenwickTree:
-    def __init__(self, n):
-        self.n = n
-        self.tree = [0] * (n + 1)     # 1-indexed
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    def update(self, i, delta):
-        """Add delta to index i (1-indexed)"""
-        while i <= self.n:
-            self.tree[i] += delta
-            i += i & (-i)             # Move to next responsible index
+class FenwickTree {
+public:
+    int n;
+    vector<long long> tree;
 
-    def query(self, i):
-        """Get prefix sum from 1 to i (inclusive)"""
-        total = 0
-        while i > 0:
-            total += self.tree[i]
-            i -= i & (-i)             # Move to parent
-        return total
+    FenwickTree(int n) : n(n), tree(n + 1, 0) {}
 
-    def range_query(self, left, right):
-        """Get sum of elements from left to right (both 1-indexed)"""
-        return self.query(right) - self.query(left - 1)
+    void update(int i, long long delta) {
+        while (i <= n) {
+            tree[i] += delta;
+            i += i & -i;
+        }
+    }
 
+    long long query(int i) const {
+        long long total = 0;
+        while (i > 0) {
+            total += tree[i];
+            i -= i & -i;
+        }
+        return total;
+    }
 
-# ─── SEGMENT TREE — Range Update, Range Query ─────────────────────────────────
-class SegmentTree:
-    def __init__(self, nums):
-        self.n = len(nums)
-        self.tree = [0] * (4 * self.n)
-        self._build(nums, 0, 0, self.n - 1)
+    long long range_query(int left, int right) const {
+        return query(right) - query(left - 1);
+    }
+};
 
-    def _build(self, nums, node, start, end):
-        if start == end:
-            self.tree[node] = nums[start]
-        else:
-            mid = (start + end) // 2
-            self._build(nums, 2*node+1, start, mid)
-            self._build(nums, 2*node+2, mid+1, end)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+class SegmentTree {
+public:
+    int n;
+    vector<long long> tree;
 
-    def update(self, idx, val, node=0, start=0, end=None):
-        if end is None: end = self.n - 1
-        if start == end:
-            self.tree[node] = val
-        else:
-            mid = (start + end) // 2
-            if idx <= mid:
-                self.update(idx, val, 2*node+1, start, mid)
-            else:
-                self.update(idx, val, 2*node+2, mid+1, end)
-            self.tree[node] = self.tree[2*node+1] + self.tree[2*node+2]
+    SegmentTree(const vector<int>& nums) {
+        n = nums.size();
+        tree.assign(4 * max(1, n), 0);
+        if (n > 0) build(nums, 0, 0, n - 1);
+    }
 
-    def query(self, left, right, node=0, start=0, end=None):
-        if end is None: end = self.n - 1
-        if right < start or end < left:
-            return 0                   # Out of range
-        if left <= start and end <= right:
-            return self.tree[node]     # Fully within range
-        mid = (start + end) // 2
-        return (self.query(left, right, 2*node+1, start, mid) +
-                self.query(left, right, 2*node+2, mid+1, end))
+    void build(const vector<int>& nums, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = nums[start];
+            return;
+        }
+        int mid = (start + end) / 2;
+        build(nums, 2 * node + 1, start, mid);
+        build(nums, 2 * node + 2, mid + 1, end);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+    }
+
+    void update(int idx, int val, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = val;
+            return;
+        }
+        int mid = (start + end) / 2;
+        if (idx <= mid) update(idx, val, 2 * node + 1, start, mid);
+        else update(idx, val, 2 * node + 2, mid + 1, end);
+        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];
+    }
+
+    long long query(int left, int right, int node, int start, int end) const {
+        if (right < start || end < left) return 0;
+        if (left <= start && end <= right) return tree[node];
+        int mid = (start + end) / 2;
+        return query(left, right, 2 * node + 1, start, mid) + query(left, right, 2 * node + 2, mid + 1, end);
+    }
+};
 ```
 
 ---

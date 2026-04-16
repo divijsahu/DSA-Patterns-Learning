@@ -22,45 +22,26 @@ Interval DP solves problems where the answer for a range `[i, j]` depends on spl
 
 ## 📐 Core Template
 
-```python
-# ─── INTERVAL DP TEMPLATE ─────────────────────────────────────────────────────
-def interval_dp(arr):
-    n = len(arr)
-    # dp[i][j] = answer for subarray arr[i..j]
-    dp = [[0] * n for _ in range(n)]
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
 
-    # Fill by increasing interval LENGTH
-    for length in range(2, n + 1):              # Length from 2 to n
-        for i in range(n - length + 1):
-            j = i + length - 1                  # Right endpoint
+int burstBalloons(vector<int> nums) {
+    int n = nums.size();
+    nums.insert(nums.begin(), 1);
+    nums.push_back(1);
+    vector<vector<int>> dp(n + 2, vector<int>(n + 2, 0));
 
-            dp[i][j] = float('inf')             # Or -inf, depending on problem
-
-            for k in range(i, j):               # Try every split point
-                # Combine dp[i][k] and dp[k+1][j]
-                cost = dp[i][k] + dp[k+1][j] + merge_cost(arr, i, j, k)
-                dp[i][j] = min(dp[i][j], cost)
-
-    return dp[0][n-1]
-
-
-# ─── BURST BALLOONS ───────────────────────────────────────────────────────────
-def max_coins(nums):
-    # Add boundary balloons with value 1
-    nums = [1] + nums + [1]
-    n = len(nums)
-    dp = [[0] * n for _ in range(n)]
-
-    # dp[i][j] = max coins from bursting all balloons between i and j (exclusive)
-    for length in range(2, n):
-        for left in range(0, n - length):
-            right = left + length
-            for k in range(left + 1, right):   # k = last balloon to burst in range
-                coins = nums[left] * nums[k] * nums[right]
-                dp[left][right] = max(dp[left][right],
-                                      dp[left][k] + coins + dp[k][right])
-
-    return dp[0][n-1]
+    for (int len = 2; len < n + 2; ++len) {
+        for (int left = 0; left + len < n + 2; ++left) {
+            int right = left + len;
+            for (int last = left + 1; last < right; ++last) {
+                dp[left][right] = max(dp[left][right], dp[left][last] + nums[left] * nums[last] * nums[right] + dp[last][right]);
+            }
+        }
+    }
+    return dp[0][n + 1];
+}
 ```
 
 ---
