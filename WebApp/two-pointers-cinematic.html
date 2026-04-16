@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Pointers: Cinematic Edition</title>
+  <style>
+    :root {
+      --bg-1: #05070f;
+      --bg-2: #0b1220;
+      --panel: rgba(12, 19, 38, 0.7);
+      --text: #e6edf8;
+      --muted: #93a4c5;
+      --cyan: #44e2ff;
+      --blue: #6ea8ff;
+      --pink: #ff6ec7;
+      --green: #63ffb0;
+      --gold: #ffd166;
+      --border: rgba(148, 163, 184, 0.2);
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", "Poppins", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 10% 10%, rgba(68, 226, 255, 0.15), transparent 55%),
+        radial-gradient(900px 600px at 90% 20%, rgba(255, 110, 199, 0.12), transparent 55%),
+        radial-gradient(1000px 700px at 50% 100%, rgba(99, 255, 176, 0.09), transparent 60%),
+        linear-gradient(120deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .grain {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.08;
+      background-image: radial-gradient(#fff 0.35px, transparent 0.35px);
+      background-size: 3px 3px;
+      z-index: 1;
+    }
+
+    .container {
+      width: min(1180px, 92vw);
+      margin: 0 auto;
+      padding: 24px 0 90px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero {
+      border: 1px solid var(--border);
+      background: linear-gradient(140deg, rgba(13, 22, 44, 0.8), rgba(10, 16, 34, 0.62));
+      backdrop-filter: blur(8px);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 40px 36px;
+      position: relative;
+      overflow: hidden;
+      animation: riseIn 900ms ease both;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 26px;
+      background: conic-gradient(from 0deg, transparent, rgba(68, 226, 255, 0.25), transparent, rgba(255, 110, 199, 0.25), transparent);
+      filter: blur(22px);
+      opacity: 0.5;
+      z-index: -1;
+      animation: spin 10s linear infinite;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      letter-spacing: 0.15em;
+      font-size: 0.74rem;
+      color: var(--cyan);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4.4vw, 3.6rem);
+      line-height: 1.07;
+      max-width: 18ch;
+      text-wrap: balance;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      color: var(--muted);
+      max-width: 62ch;
+      font-size: 1.02rem;
+      line-height: 1.58;
+    }
+
+    .pill-row {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid rgba(110, 168, 255, 0.3);
+      color: #cfe1ff;
+      background: rgba(14, 24, 44, 0.7);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      animation: pulseGlow 2.6s ease-in-out infinite;
+    }
+
+    .grid {
+      margin-top: 26px;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      animation: riseIn 700ms ease both;
+    }
+
+    .card h2 {
+      margin: 2px 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .sim {
+      margin-top: 22px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(12, 19, 38, 0.84), rgba(7, 13, 28, 0.78));
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: riseIn 1s ease both;
+    }
+
+    .sim-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sim-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 150ms ease, background 180ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px) scale(0.98); }
+
+    .sim-stage {
+      padding: 18px;
+      overflow-x: auto;
+    }
+
+    .array {
+      display: flex;
+      gap: 12px;
+      min-width: max-content;
+      align-items: flex-end;
+      padding: 18px 6px 30px;
+    }
+
+    .cell {
+      width: 66px;
+      height: 84px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      display: grid;
+      place-items: center;
+      position: relative;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #e9f0ff;
+      transition: 260ms ease;
+    }
+
+    .cell .index {
+      position: absolute;
+      bottom: -24px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .cell.left {
+      border-color: rgba(68, 226, 255, 0.95);
+      box-shadow: 0 0 0 1px rgba(68, 226, 255, 0.3), 0 0 24px rgba(68, 226, 255, 0.28);
+      transform: translateY(-8px);
+    }
+
+    .cell.right {
+      border-color: rgba(255, 110, 199, 0.95);
+      box-shadow: 0 0 0 1px rgba(255, 110, 199, 0.26), 0 0 24px rgba(255, 110, 199, 0.25);
+      transform: translateY(-8px);
+    }
+
+    .tag {
+      position: absolute;
+      top: -28px;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+
+    .tag.left { color: #0ef; border-color: rgba(68, 226, 255, 0.6); background: rgba(68, 226, 255, 0.12); }
+    .tag.right { color: #ff8bd6; border-color: rgba(255, 110, 199, 0.6); background: rgba(255, 110, 199, 0.12); }
+
+    .hud {
+      padding: 14px 18px 20px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+    }
+
+    .hud-box {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .hud-label {
+      font-size: 0.73rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .hud-value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .log {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(4, 8, 20, 0.55);
+      min-height: 72px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .log strong { color: var(--text); }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(68, 226, 255, 0); }
+      50% { box-shadow: 0 0 16px rgba(68, 226, 255, 0.18); }
+    }
+
+    @media (max-width: 960px) {
+      .span-4, .span-6, .span-8 { grid-column: span 12; }
+      .hud { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .hero { padding: 26px 20px; border-radius: 20px; }
+      .hud { grid-template-columns: 1fr; }
+      .cell { width: 58px; height: 74px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+  <main class="container">
+    <section class="hero">
+      <span class="eyebrow">Pattern 3 · Cinematic Edition</span>
+      <h1>Two Pointers Like A Movie Scene</h1>
+      <p class="subtitle">
+        Learn this pattern through camera cuts, visual tension, and a live pointer simulator.
+        Stop brute force. Start proof-driven movement.
+      </p>
+      <div class="pill-row">
+        <span class="pill">O(n) pair sweep</span>
+        <span class="pill">In-place mastery</span>
+        <span class="pill">Interview-grade narration</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card span-4">
+        <h2>Scene Setup</h2>
+        <p>Sorted array. Left pointer starts at the beginning, right pointer starts at the end. Every move shrinks uncertainty.</p>
+      </article>
+      <article class="card span-4">
+        <h2>Movement Rule</h2>
+        <p>If current sum is too small, move left forward. If current sum is too large, move right backward.</p>
+      </article>
+      <article class="card span-4">
+        <h2>Final Cut</h2>
+        <p>Pointers meet the target or cross each other. Either way, the story ends in linear time with no wasted frames.</p>
+      </article>
+    </section>
+
+    <section class="sim" aria-label="Two pointers simulator">
+      <div class="sim-head">
+        <div class="sim-title">Live Pointer Simulator · Two Sum on Sorted Array</div>
+        <div class="controls">
+          <button id="stepBtn">Step</button>
+          <button id="playBtn">Auto Play</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+      </div>
+      <div class="sim-stage">
+        <div class="array" id="array"></div>
+      </div>
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">Left Index</div>
+          <div class="hud-value" id="leftIdx">0</div>
+        </div>
+        <div class="hud-box">
+          <div class="hud-label">Right Index</div>
+          <div class="hud-value" id="rightIdx">0</div>
+        </div>
+        <div class="hud-box">
+          <div class="hud-label">Current Sum</div>
+          <div class="hud-value" id="sum">0</div>
+        </div>
+        <div class="hud-box">
+          <div class="hud-label">Target</div>
+          <div class="hud-value" id="target">8</div>
+        </div>
+      </div>
+      <div class="sim-stage" style="padding-top: 0;">
+        <div class="log" id="log"></div>
+      </div>
+    </section>
+
+    <p class="footer-note">Built for visual learning. For production docs, link this page from your chapter markdown.</p>
+  </main>
+
+  <script>
+    const nums = [1, 2, 4, 6, 10];
+    const target = 8;
+    let left = 0;
+    let right = nums.length - 1;
+    let done = false;
+    let interval = null;
+
+    const arrayEl = document.getElementById("array");
+    const leftIdxEl = document.getElementById("leftIdx");
+    const rightIdxEl = document.getElementById("rightIdx");
+    const sumEl = document.getElementById("sum");
+    const targetEl = document.getElementById("target");
+    const logEl = document.getElementById("log");
+    const stepBtn = document.getElementById("stepBtn");
+    const playBtn = document.getElementById("playBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    targetEl.textContent = String(target);
+
+    function renderArray() {
+      arrayEl.innerHTML = "";
+      nums.forEach((num, idx) => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = num;
+
+        const index = document.createElement("span");
+        index.className = "index";
+        index.textContent = `idx ${idx}`;
+        cell.appendChild(index);
+
+        if (idx === left) {
+          cell.classList.add("left");
+          const tag = document.createElement("span");
+          tag.className = "tag left";
+          tag.textContent = "L";
+          cell.appendChild(tag);
+        }
+
+        if (idx === right) {
+          cell.classList.add("right");
+          const tag = document.createElement("span");
+          tag.className = "tag right";
+          tag.textContent = "R";
+          cell.appendChild(tag);
+        }
+
+        arrayEl.appendChild(cell);
+      });
+
+      leftIdxEl.textContent = String(left);
+      rightIdxEl.textContent = String(right);
+      const valid = left >= 0 && right >= 0 && left < nums.length && right < nums.length;
+      sumEl.textContent = valid ? String(nums[left] + nums[right]) : "-";
+    }
+
+    function writeLog(message, strong = "") {
+      if (strong) {
+        logEl.innerHTML = `<strong>${strong}</strong> ${message}`;
+      } else {
+        logEl.textContent = message;
+      }
+    }
+
+    function step() {
+      if (done) return;
+      if (left >= right) {
+        done = true;
+        writeLog("Pointers crossed. No pair found.", "End:");
+        stopAuto();
+        return;
+      }
+
+      const current = nums[left] + nums[right];
+      if (current === target) {
+        done = true;
+        writeLog(`Found target with indices (${left}, ${right}) and values (${nums[left]}, ${nums[right]}).`, "Match:");
+        renderArray();
+        stopAuto();
+        return;
+      }
+
+      if (current < target) {
+        writeLog(`${nums[left]} + ${nums[right]} = ${current} is too small, so move left pointer right.`, "Decision:");
+        left += 1;
+      } else {
+        writeLog(`${nums[left]} + ${nums[right]} = ${current} is too large, so move right pointer left.`, "Decision:");
+        right -= 1;
+      }
+
+      renderArray();
+    }
+
+    function startAuto() {
+      if (interval || done) return;
+      playBtn.textContent = "Pause";
+      interval = setInterval(step, 1100);
+    }
+
+    function stopAuto() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+      playBtn.textContent = "Auto Play";
+    }
+
+    function reset() {
+      stopAuto();
+      left = 0;
+      right = nums.length - 1;
+      done = false;
+      renderArray();
+      writeLog("Click Step or Auto Play to begin the cinematic sweep.", "Ready:");
+    }
+
+    stepBtn.addEventListener("click", step);
+    playBtn.addEventListener("click", () => {
+      if (interval) stopAuto();
+      else startAuto();
+    });
+    resetBtn.addEventListener("click", reset);
+
+    reset();
+  </script>
+</body>
+</html>

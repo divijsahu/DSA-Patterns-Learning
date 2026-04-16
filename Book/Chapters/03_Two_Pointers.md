@@ -21,16 +21,12 @@ By the end, you should be able to:
 
 ## 🌌 Magic Scene Board
 
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0b1220", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#22d3ee", "lineColor": "#67e8f9", "secondaryColor": "#111827", "tertiaryColor": "#1f2937"}, "flowchart": {"curve": "basis"}}}%%
-flowchart TD
-    A[Cold Open: brute force feels slow] --> B[Inciting Moment: sorted data appears]
-    B --> C[Power Unlock: directional pointer movement]
-    C --> D[Montage: each move shrinks search space]
-    D --> E[Finale: answer found in linear sweep]
-
-    classDef glow fill:#0f172a,stroke:#22d3ee,color:#e2e8f0,stroke-width:2px;
-    class A,B,C,D,E glow;
+```text
+Cold Open: brute force feels slow
+    -> Inciting Moment: sorted data appears
+        -> Power Unlock: directional pointer movement
+            -> Montage: each move shrinks search space
+                -> Finale: answer found in linear sweep
 ```
 
 ---
@@ -77,17 +73,19 @@ No nested loops, no drama: each pointer moves at most n times.
 
 ## 🗺️ Flowchart: Should I Use Two Pointers?
 
-```mermaid
-flowchart TD
-    A[Start problem scan] --> B{Array or string input?}
-    B -- No --> X[Try graph/tree/DP patterns]
-    B -- Yes --> C{Sorted or can sort safely?}
-    C -- No --> D[Try Hash Map or other pattern]
-    C -- Yes --> E{Need pair/triplet or in-place transform?}
-    E -- Yes --> F[Use Two Pointers]
-    E -- No --> G{Contiguous subarray/substring?}
-    G -- Yes --> H[Use Sliding Window]
-    G -- No --> I[Re-evaluate constraints and output]
+```text
+Start problem scan
+    |
+    v
+Array or string input?
+    |-- no  -> Try graph/tree/DP patterns
+    |-- yes -> Sorted or can sort safely?
+                             |-- no  -> Try Hash Map or other pattern
+                             |-- yes -> Need pair/triplet or in-place transform?
+                                                        |-- yes -> Use Two Pointers
+                                                        |-- no  -> Contiguous subarray/substring?
+                                                                                 |-- yes -> Use Sliding Window
+                                                                                 |-- no  -> Re-evaluate constraints and output
 ```
 
 ---
@@ -105,54 +103,48 @@ flowchart TD
 
 ## 🎬 Flowchart: Two-Sum Pointer Movement
 
-```mermaid
-flowchart LR
-    A[Compute sum = arr at left + arr at right] --> B{sum == target?}
-    B -- Yes --> C[Return answer]
-    B -- No --> D{sum < target?}
-    D -- Yes --> E[left++]
-    D -- No --> F[right--]
-    E --> A
-    F --> A
+```text
+Compute sum = arr[left] + arr[right]
+                |
+                v
+     Is sum == target?
+         |-- yes -> Return answer
+         |-- no  -> Is sum < target?
+                                    |-- yes -> left++  -> repeat
+                                    |-- no  -> right-- -> repeat
 ```
 
 ---
 
 ## ⏯️ Camera Timeline (Motion Illusion)
 
-```mermaid
-timeline
-    title Two Pointers Cinematic Cuts
-    Scene 1 : Establishing shot
-        : left at start, right at end
-    Scene 2 : First comparison
-        : sum too large, right moves inward
-    Scene 3 : Counter move
-        : sum too small, left moves inward
-    Scene 4 : Convergence
-        : exact target match
-    Scene 5 : Credits
-        : proof of O(n) movement
+```text
+Scene 1 -> Establishing shot: left at start, right at end
+Scene 2 -> First comparison: sum too large, right moves inward
+Scene 3 -> Counter move: sum too small, left moves inward
+Scene 4 -> Convergence: exact target match
+Scene 5 -> Credits: proof of O(n) movement
 ```
 
 ---
 
 ## 💫 Pointer Energy Arc
 
-```mermaid
-journey
-    title Pointer confidence and control arc
-    section Two Sum Sweep
-      Read sorted clue: 5: Learner
-      Compare outer pair: 4: Learner
-      Move correct pointer: 5: Learner
-      Shrink search space: 5: Learner
-      Land on target: 5: Learner
-    section 3Sum Upgrade
-      Fix anchor cleanly: 4: Learner
-      Skip duplicates: 3: Learner
-      Sweep left and right: 5: Learner
-      Collect unique triplets: 5: Learner
+```text
+Pointer confidence and control arc
+
+Two Sum Sweep:
+    Read sorted clue        [5/5]
+    Compare outer pair      [4/5]
+    Move correct pointer    [5/5]
+    Shrink search space     [5/5]
+    Land on target          [5/5]
+
+3Sum Upgrade:
+    Fix anchor cleanly      [4/5]
+    Skip duplicates         [3/5]
+    Sweep left and right    [5/5]
+    Collect unique triplets [5/5]
 ```
 
 ---
@@ -187,44 +179,38 @@ Cut to black. Answer found. ✅
 
 ## 🎬 Sequence View (Frame by Frame)
 
-```mermaid
-sequenceDiagram
-    participant L as Left Pointer
-    participant R as Right Pointer
-    participant C as Comparator
+```text
+L -> Compare with R
+R -> Compare with L
+Comparator computes sum
 
-    L->>C: value at left
-    R->>C: value at right
-    C-->>C: compute sum
-    C-->>R: sum too large, move leftward
-    L->>C: value at left
-    R->>C: updated value at right
-    C-->>C: compute sum again
-    C-->>L: sum too small, move rightward
-    L->>C: updated value at left
-    R->>C: current value at right
-    C-->>C: target matched
+If sum too large: move R left
+If sum too small: move L right
+
+Repeat compare
+Repeat move
+
+Target matched -> stop
 ```
 
 ---
 
 ## 🎨 Visual Pattern Map
 
-```mermaid
-mindmap
-    root((Two Pointers))
-        Entry clues
-            Sorted input
-            Pair or triplet target
-            In-place edits
-        Core moves
-            Sum too small then left plus plus
-            Sum too large then right minus minus
-            Stop when pointers cross
-        Premium habits
-            Explain invariant first
-            Prove move direction
-            Skip duplicates in 3Sum
+```text
+Two Pointers
+├── Entry clues
+│   ├── Sorted input
+│   ├── Pair or triplet target
+│   └── In-place edits
+├── Core moves
+│   ├── Sum too small -> left++
+│   ├── Sum too large -> right--
+│   └── Stop when pointers cross
+└── Premium habits
+    ├── Explain invariant first
+    ├── Prove move direction
+    └── Skip duplicates in 3Sum
 ```
 
 ---
@@ -312,22 +298,19 @@ vector<vector<int>> three_sum(vector<int> nums) {
 
 ## 🎬 3Sum Duplicate-Skip Logic (Visual State Machine)
 
-```mermaid
-stateDiagram-v2
-    [*] --> FixAnchor
-    FixAnchor --> SkipAnchor: anchor equals previous
-    SkipAnchor --> FixAnchor: advance anchor
-    FixAnchor --> SweepWindow: anchor accepted
-    SweepWindow --> FoundTriplet: sum equals zero
-    SweepWindow --> MoveLeft: sum too small
-    SweepWindow --> MoveRight: sum too large
-    FoundTriplet --> SkipLeftDup: left equals next left
-    FoundTriplet --> SkipRightDup: right equals previous right
-    SkipLeftDup --> FoundTriplet: keep skipping
-    SkipRightDup --> FoundTriplet: keep skipping
-    FoundTriplet --> SweepWindow: move both pointers
-    MoveLeft --> SweepWindow
-    MoveRight --> SweepWindow
+```text
+Start
+    -> Fix anchor i
+            -> If anchor is duplicate: skip anchor and continue
+            -> Else sweep with left/right
+                        -> If sum == 0: record triplet
+                                 -> Skip duplicate left values
+                                 -> Skip duplicate right values
+                                 -> Move both pointers
+                        -> If sum < 0: move left
+                        -> If sum > 0: move right
+                        -> Continue sweep
+    -> Next anchor
 ```
 
 ---
