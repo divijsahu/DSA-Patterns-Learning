@@ -3,6 +3,12 @@
 
 > *"An expert is not someone who has solved the most problems. An expert is someone who, upon reading the first line of a problem, already knows where it's going."*
 
+## Course Navigation
+
+- Start here: [README](README.md)
+- Next: [Part 2 - Intermediate Patterns](Part2_Intermediate_Patterns.md)
+- Later: [Part 3 - Advanced Patterns](Part3_Advanced_Patterns.md)
+
 ---
 
 # 🗺️ BEFORE YOU BEGIN: HOW TO USE THIS GUIDE

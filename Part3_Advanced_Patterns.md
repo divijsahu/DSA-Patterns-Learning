@@ -3,6 +3,12 @@
 
 > *"The difference between a good engineer and a great one is not speed — it's the ability to see the shape of a problem before touching the keyboard."*
 
+## Course Navigation
+
+- Back: [README](README.md)
+- Previous: [Part 2 - Intermediate Patterns](Part2_Intermediate_Patterns.md)
+- Start over: [Part 1 - Foundation Patterns](Part1_Foundation_Patterns.md)
+
 ---
 
 # PART 3: ADVANCED PATTERNS
