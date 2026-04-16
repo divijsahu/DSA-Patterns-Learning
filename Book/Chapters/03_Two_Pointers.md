@@ -65,7 +65,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A[Compute sum = arr[left] + arr[right]] --> B{sum == target?}
+    A[Compute sum = arr at left + arr at right] --> B{sum == target?}
     B -- Yes --> C[Return answer]
     B -- No --> D{sum < target?}
     D -- Yes --> E[left++]
