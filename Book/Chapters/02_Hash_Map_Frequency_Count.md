@@ -1,19 +1,124 @@
-# Chapter 2 - Hash Map / Frequency Count
+# Pattern 2 — Hash Map / Frequency Count
 
-Read the full teaching section in [Part 1](../../Part1_Foundation_Patterns.md#L311).
+**Category:** Array/String · **Difficulty Band:** Easy–Medium
 
-## What This Chapter Trains
+---
 
-- O(1) lookup reasoning
-- Complement matching
-- Counting, grouping, and deduplication
+## 🎯 Pattern Fingerprint
 
-## Review Prompts
+**Spot this pattern when you see:**
+- Check if an element **was seen before**
+- Find **pairs, duplicates, or complements**
+- Count **frequency** of characters or numbers
+- "Two Sum" style: find two elements that sum to target
+- Problem says: *"find if exists"*, *"count occurrences"*, *"group by"*, *"anagram"*
 
-- When is a set enough instead of a full map?
-- Why do we check the complement before storing the current value?
-- How do canonical keys make grouping work?
+**This pattern is NOT for:**
+- Problems needing sorted order (use sorted array or BST)
+- Range queries (use Prefix Sum or Segment Tree)
 
-## Next Chapter
+---
 
-- [Chapter 3 - Two Pointers](03_Two_Pointers.md)
+## 🧠 Intuition in Plain English
+
+A hash map is a **memory palace** — you trade space for instant lookup. Instead of searching the entire array for a complement, you ask: "Have I seen `target - current` before?" The moment you've seen it, you have your answer. This converts O(n²) search loops into O(n) single passes.
+
+---
+
+## 🔮 Pattern Prediction Checklist
+
+- [ ] Do I need to know if something **exists** or how often it appears? → Hash Map
+- [ ] Am I looking for a **pair** that satisfies a condition (sum, difference, product)? → Hash Map
+- [ ] Do I need to **group** elements by some property (anagram grouping, etc.)? → Hash Map
+
+---
+
+## 📐 Core Template
+
+```python
+from collections import defaultdict, Counter
+
+# ─── TWO SUM PATTERN (find complement) ───────────────────────────────────────
+def two_sum(nums, target):
+    seen = {}                          # {value: index}
+
+    for i, num in enumerate(nums):
+        complement = target - num
+
+        if complement in seen:
+            return [seen[complement], i]
+
+        seen[num] = i                  # Store AFTER checking (avoid using same index)
+
+    return []
+
+# ─── FREQUENCY COUNT PATTERN ─────────────────────────────────────────────────
+def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+
+    freq = Counter(s)                  # {char: count}
+
+    for char in t:
+        freq[char] -= 1
+        if freq[char] < 0:
+            return False
+
+    return True
+
+# ─── GROUPING PATTERN ────────────────────────────────────────────────────────
+def group_anagrams(strs):
+    groups = defaultdict(list)         # {sorted_word: [original_words]}
+
+    for word in strs:
+        key = tuple(sorted(word))      # Canonical form of an anagram group
+        groups[key].append(word)
+
+    return list(groups.values())
+```
+
+---
+
+## 🔀 Variants
+
+| Variant | Use Case |
+|---------|----------|
+| **`Counter`** | Frequency count in O(n), supports arithmetic |
+| **`defaultdict(list)`** | Grouping items by key |
+| **`defaultdict(int)`** | Running counts without KeyError |
+| **Set instead of dict** | When you only need existence, not count/index |
+
+---
+
+## ⏱️ Complexity
+
+| | Brute Force | Hash Map |
+|-|-------------|----------|
+| **Lookup** | O(n) | O(1) average |
+| **Total** | O(n²) | O(n) |
+| **Space** | O(1) | O(n) |
+
+---
+
+## ❌ Anti-patterns & Traps
+
+- **Using same element twice:** In Two Sum, store the index *after* checking the complement.
+- **Hash collisions in interviews:** Know that worst-case is O(n), not O(1).
+- **Forgetting sets are faster:** If you only need existence (not count), `set` is cleaner than `dict`.
+
+---
+
+## 📝 Problem Set
+
+| # | Problem | Difficulty | Why This Pattern |
+|---|---------|------------|------------------|
+| 1 | [Two Sum](https://leetcode.com/problems/two-sum/) | 🟢 Easy | Classic complement lookup |
+| 2 | [Valid Anagram](https://leetcode.com/problems/valid-anagram/) | 🟢 Easy | Frequency comparison |
+| 3 | [Contains Duplicate](https://leetcode.com/problems/contains-duplicate/) | 🟢 Easy | Existence check with set |
+| 4 | [Group Anagrams](https://leetcode.com/problems/group-anagrams/) | 🟡 Medium | Group by canonical key |
+| 5 | [Longest Consecutive Sequence](https://leetcode.com/problems/longest-consecutive-sequence/) | 🟡 Medium | Set + streak detection |
+| 6 | [4Sum II](https://leetcode.com/problems/4sum-ii/) | 🟡 Medium | Two-pass hash map |
+| 7 | [Subarray Sum Equals K](https://leetcode.com/problems/subarray-sum-equals-k/) | 🟡 Medium | Hash map + prefix sum combo |
+
+---
+---

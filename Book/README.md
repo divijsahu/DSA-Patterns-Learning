@@ -2,9 +2,11 @@
 
 This is the reading-friendly front door to the course.
 
-The full explanations, examples, and problem sets remain in the original study guides. The book layer simply breaks the journey into shorter chapter pages so you can read the material in a cleaner order.
+The full explanations, examples, and problem sets are now copied into the book pages themselves. The original study guides remain as the source files, but the book layer gives you a clean, chapter-by-chapter reading path.
 
 ## Reading Order
+
+0. [Prologue - How to Use This Book](00_Prologue.md)
 
 ### Part 1 - Foundation Chapters
 
@@ -44,6 +46,7 @@ The full explanations, examples, and problem sets remain in the original study g
 28. [Chapter 28 - Segment Tree / Fenwick Tree (BIT)](Chapters/28_Segment_Tree_Fenwick_Tree_BIT.md)
 29. [Chapter 29 - Linked List Manipulation](Chapters/29_Linked_List_Manipulation.md)
 30. [Chapter 30 - Matrix / Grid Patterns](Chapters/30_Matrix_Grid_Patterns.md)
+31. [Appendix - Master Cheat Sheet](31_Master_Cheat_Sheet.md)
 
 ## Continue
 

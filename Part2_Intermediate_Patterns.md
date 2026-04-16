@@ -3,12 +3,6 @@
 
 > *"Trees and graphs aren't scary. They're just recursion wearing a Halloween costume."*
 
-## Course Navigation
-
-- Back: [README](README.md)
-- Previous: [Part 1 - Foundation Patterns](Part1_Foundation_Patterns.md)
-- Next: [Part 3 - Advanced Patterns](Part3_Advanced_Patterns.md)
-
 ---
 
 # PART 2: INTERMEDIATE PATTERNS
