@@ -65,6 +65,7 @@ If you want to turn this into a long-term interview system, keep the pattern ind
 
 ## Course Map
 
+- [Book Edition](Book/README.md)
 - [Curriculum Home](Curriculum/README.md)
 - [Pattern Index](Curriculum/Pattern_Index.md)
 - [Foundation Track](Curriculum/Foundation/README.md)

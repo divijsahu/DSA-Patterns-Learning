@@ -4,6 +4,7 @@ This folder is navigation-only. The canonical study material stays in the top-le
 
 ## Tracks
 
+- [Book Edition](../Book/README.md)
 - [Foundation Track](Foundation/README.md)
 - [Intermediate Track](Intermediate/README.md)
 - [Advanced Track](Advanced/README.md)
