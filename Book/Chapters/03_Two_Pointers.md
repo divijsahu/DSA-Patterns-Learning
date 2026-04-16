@@ -15,6 +15,24 @@ By the end, you should be able to:
 
 ⏱️ Suggested study time: 35 to 50 minutes
 
+🎞️ Visual mode: Cinematic Storyboard Edition
+
+---
+
+## 🌌 Magic Scene Board
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0b1220", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#22d3ee", "lineColor": "#67e8f9", "secondaryColor": "#111827", "tertiaryColor": "#1f2937"}, "flowchart": {"curve": "basis"}}}%%
+flowchart TD
+    A[Cold Open: brute force feels slow] --> B[Inciting Moment: sorted data appears]
+    B --> C[Power Unlock: directional pointer movement]
+    C --> D[Montage: each move shrinks search space]
+    D --> E[Finale: answer found in linear sweep]
+
+    classDef glow fill:#0f172a,stroke:#22d3ee,color:#e2e8f0,stroke-width:2px;
+    class A,B,C,D,E glow;
+```
+
 ---
 
 ## ✨ Premium Snapshot
@@ -100,6 +118,45 @@ flowchart LR
 
 ---
 
+## ⏯️ Camera Timeline (Motion Illusion)
+
+```mermaid
+timeline
+    title Two Pointers Cinematic Cuts
+    Scene 1 : Establishing shot
+        : left at start, right at end
+    Scene 2 : First comparison
+        : sum too large, right moves inward
+    Scene 3 : Counter move
+        : sum too small, left moves inward
+    Scene 4 : Convergence
+        : exact target match
+    Scene 5 : Credits
+        : proof of O(n) movement
+```
+
+---
+
+## 💫 Pointer Energy Arc
+
+```mermaid
+journey
+    title Pointer confidence and control arc
+    section Two Sum Sweep
+      Read sorted clue: 5: Learner
+      Compare outer pair: 4: Learner
+      Move correct pointer: 5: Learner
+      Shrink search space: 5: Learner
+      Land on target: 5: Learner
+    section 3Sum Upgrade
+      Fix anchor cleanly: 4: Learner
+      Skip duplicates: 3: Learner
+      Sweep left and right: 5: Learner
+      Collect unique triplets: 5: Learner
+```
+
+---
+
 ## 🍿 Cinematic Pointer Walkthrough
 
 ### Scene 1: Opening shot
@@ -147,6 +204,27 @@ sequenceDiagram
     L->>C: updated value at left
     R->>C: current value at right
     C-->>C: target matched
+```
+
+---
+
+## 🎨 Visual Pattern Map
+
+```mermaid
+mindmap
+    root((Two Pointers))
+        Entry clues
+            Sorted input
+            Pair or triplet target
+            In-place edits
+        Core moves
+            Sum too small then left plus plus
+            Sum too large then right minus minus
+            Stop when pointers cross
+        Premium habits
+            Explain invariant first
+            Prove move direction
+            Skip duplicates in 3Sum
 ```
 
 ---
@@ -338,6 +416,10 @@ If you remember just one thing:
 - Sum small: move left.
 - Sum large: move right.
 - 3Sum formula: sort + fix anchor + two-pointer sweep + duplicate skip.
+
+### Neon recall mantra
+
+Move with proof, not mood.
 
 ---
 
