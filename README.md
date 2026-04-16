@@ -62,3 +62,12 @@ If you are studying from zero, use this order:
 5. Mixed practice and timed recall
 
 If you want to turn this into a long-term interview system, keep the pattern index open while practicing and annotate it with your own problem notes.
+
+## Course Map
+
+- [Curriculum Home](Curriculum/README.md)
+- [Pattern Index](Curriculum/Pattern_Index.md)
+- [Foundation Track](Curriculum/Foundation/README.md)
+- [Intermediate Track](Curriculum/Intermediate/README.md)
+- [Advanced Track](Curriculum/Advanced/README.md)
+- [Template Library](Curriculum/Templates/README.md)
